@@ -100,3 +100,5 @@ rsync-*.sh
 complete-*.sh
 manual-*.md
 upload-*.md
+quick-deploy.sh
+
