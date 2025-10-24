@@ -102,3 +102,66 @@ manual-*.md
 upload-*.md
 quick-deploy.sh
 
+# Security & Sensitive Information
+# Server credentials and configs
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+known_hosts
+authorized_keys
+
+# Server configuration files
+nginx.conf
+apache.conf
+*.conf
+*.config
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# SSH keys and certificates
+.ssh/
+*.ssh
+
+# API keys and secrets
+secrets.json
+config.json
+credentials.json
+*.secret
+*.private
+
+# Server logs
+/var/log/
+/var/www/
+/usr/share/nginx/
+
+# Deployment scripts with sensitive info
+deploy-*.sh
+server-*.sh
+fix-*.sh
+check-*.sh
+rsync-*.sh
+complete-*.sh
+manual-*.md
+upload-*.md
+quick-deploy.sh
+start.sh
