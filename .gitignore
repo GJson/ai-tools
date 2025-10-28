@@ -9,6 +9,7 @@ dist/
 build/
 
 # Environment variables
+env.example
 .env
 .env.local
 .env.development.local
@@ -101,6 +102,8 @@ complete-*.sh
 manual-*.md
 upload-*.md
 quick-deploy.sh
+backend/env.example
+
 
 # Security & Sensitive Information
 # Server credentials and configs

@@ -119,10 +119,42 @@ body {
   transform: translateY(-2px);
 }
 
-/* 响应式设计 */
+/* 移动端触摸优化 */
 @media (max-width: 768px) {
   .container {
     padding: 0 0.75rem;
+  }
+  
+  /* 增加触摸目标大小 */
+  button, .btn, .nav-link, .tool-card, .quick-access-card, .news-card {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* 优化触摸反馈 */
+  button:active, .btn:active, .nav-link:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+  
+  /* 防止双击缩放 */
+  * {
+    touch-action: manipulation;
+  }
+  
+  /* 优化滚动 */
+  .mobile-menu, .mobile-search-suggestions {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* 防止横向滚动 */
+  body {
+    overflow-x: hidden;
+  }
+  
+  /* 优化输入框 */
+  input, textarea, select {
+    font-size: 16px; /* 防止iOS缩放 */
   }
 }
 

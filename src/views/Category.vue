@@ -691,17 +691,263 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
+  .header {
+    padding: 0.75rem 0;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .back-btn {
+    align-self: flex-start;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .header-title {
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+  
+  .category-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .category-icon .icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .title-content h1 {
+    font-size: 1.25rem;
+  }
+  
+  .title-content p {
+    font-size: 0.875rem;
+  }
+  
+  .main-content {
+    margin-left: 0;
+    padding: 1rem 0;
+  }
+  
+  .sidebar {
+    display: none;
+  }
+  
+  .subcategories {
+    margin-bottom: 1.5rem;
+  }
+  
+  .subcategories-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .subcategory-card {
+    padding: 1rem;
+  }
+  
+  .subcategory-name {
+    font-size: 1rem;
+  }
+  
+  .subcategory-description {
+    font-size: 0.8125rem;
+  }
+  
+  .tool-count {
+    font-size: 0.75rem;
+  }
+  
   .filters {
+    padding: 1rem;
+    margin-bottom: 1rem;
     flex-direction: column;
     align-items: flex-start;
   }
   
+  .filter-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .filter-options {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .filter-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
   .tools-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .tool-card {
+    padding: 1rem;
+  }
+  
+  .tool-header {
+    margin-bottom: 0.75rem;
+  }
+  
+  .tool-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .tool-icon-svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .tool-name {
+    font-size: 1rem;
+  }
+  
+  .tool-description {
+    font-size: 0.8125rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .tool-features {
+    margin-bottom: 0.75rem;
+  }
+  
+  .feature-tag {
+    font-size: 0.6875rem;
+    padding: 0.1875rem 0.375rem;
+  }
+  
+  .tool-meta {
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .rating,
+  .user-count,
+  .category {
+    font-size: 0.8125rem;
+  }
+  
+  .tag {
+    font-size: 0.6875rem;
+    padding: 0.1875rem 0.375rem;
   }
   
   .pagination {
     flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .page-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .page-number {
+    width: 36px;
+    height: 36px;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+  
+  .header {
+    padding: 0.5rem 0;
+  }
+  
+  .category-icon {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .category-icon .icon {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .title-content h1 {
+    font-size: 1.125rem;
+  }
+  
+  .title-content p {
+    font-size: 0.8125rem;
+  }
+  
+  .subcategory-card {
+    padding: 0.75rem;
+  }
+  
+  .subcategory-name {
+    font-size: 0.875rem;
+  }
+  
+  .subcategory-description {
+    font-size: 0.75rem;
+  }
+  
+  .tool-count {
+    font-size: 0.6875rem;
+  }
+  
+  .filters {
+    padding: 0.75rem;
+  }
+  
+  .filter-btn {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.8125rem;
+  }
+  
+  .tool-card {
+    padding: 0.75rem;
+  }
+  
+  .tool-icon {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .tool-icon-svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .tool-name {
+    font-size: 0.875rem;
+  }
+  
+  .tool-description {
+    font-size: 0.75rem;
+  }
+  
+  .feature-tag {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.25rem;
+  }
+  
+  .rating,
+  .user-count,
+  .category {
+    font-size: 0.75rem;
+  }
+  
+  .tag {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.25rem;
   }
 }
 </style>

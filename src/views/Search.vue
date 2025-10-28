@@ -16,9 +16,75 @@
                 placeholder="搜索AI工具..." 
                 v-model="searchQuery"
                 @keyup.enter="performSearch"
+                @input="onSearchInput"
+                @focus="showSuggestions = true"
+                @blur="hideSuggestions"
                 class="search-input"
+                ref="searchInput"
               />
               <button @click="performSearch" class="search-btn">搜索</button>
+            </div>
+            
+            <!-- 搜索建议下拉框 -->
+            <div v-if="showSuggestions && (searchSuggestions.length > 0 || searchHistory.length > 0)" class="search-suggestions">
+              <!-- 搜索历史 -->
+              <div v-if="searchHistory.length > 0 && !searchQuery.trim()" class="suggestions-section">
+                <div class="suggestions-header">
+                  <Clock class="suggestions-icon" />
+                  <span>搜索历史</span>
+                  <button @click="clearHistory" class="clear-history-btn">清除</button>
+                </div>
+                <div class="suggestions-list">
+                  <div 
+                    v-for="(item, index) in searchHistory.slice(0, 5)" 
+                    :key="index"
+                    class="suggestion-item"
+                    @click="selectSuggestion(item)"
+                  >
+                    <Clock class="suggestion-icon" />
+                    <span>{{ item }}</span>
+                    <button @click.stop="removeFromHistory(item)" class="remove-btn">×</button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 热门搜索 -->
+              <div v-if="!searchQuery.trim()" class="suggestions-section">
+                <div class="suggestions-header">
+                  <TrendingUp class="suggestions-icon" />
+                  <span>热门搜索</span>
+                </div>
+                <div class="suggestions-list">
+                  <div 
+                    v-for="(term, index) in popularSearches" 
+                    :key="index"
+                    class="suggestion-item"
+                    @click="selectSuggestion(term)"
+                  >
+                    <TrendingUp class="suggestion-icon" />
+                    <span>{{ term }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 搜索建议 -->
+              <div v-if="searchSuggestions.length > 0" class="suggestions-section">
+                <div class="suggestions-header">
+                  <Search class="suggestions-icon" />
+                  <span>搜索建议</span>
+                </div>
+                <div class="suggestions-list">
+                  <div 
+                    v-for="(suggestion, index) in searchSuggestions.slice(0, 8)" 
+                    :key="index"
+                    class="suggestion-item"
+                    @click="selectSuggestion(suggestion)"
+                  >
+                    <Search class="suggestion-icon" />
+                    <span>{{ suggestion }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -214,7 +280,9 @@ import {
   Users, 
   Tag, 
   Grid, 
-  List 
+  List,
+  Clock,
+  TrendingUp
 } from 'lucide-vue-next'
 import { categories } from '@/data/categories'
 import { aiTools } from '@/data/tools'
@@ -234,6 +302,24 @@ const sortBy = ref('relevance')
 const viewMode = ref<'grid' | 'list'>('grid')
 const currentPage = ref(1)
 const pageSize = 12
+
+// 搜索建议相关
+const showSuggestions = ref(false)
+const searchSuggestions = ref<string[]>([])
+const searchHistory = ref<string[]>([])
+const searchInput = ref<HTMLInputElement>()
+
+// 热门搜索词
+const popularSearches = ref([
+  'ChatGPT',
+  'AI写作',
+  'AI绘画',
+  '免费工具',
+  'AI编程',
+  'AI视频',
+  'AI办公',
+  'AI设计'
+])
 
 // 创建Fuse搜索实例
 const fuse = new Fuse(aiTools, {
@@ -341,7 +427,96 @@ const goBack = () => {
 
 const performSearch = () => {
   currentPage.value = 1
+  showSuggestions.value = false
+  
+  // 添加到搜索历史
+  if (searchQuery.value.trim()) {
+    addToHistory(searchQuery.value.trim())
+  }
+  
   // 搜索逻辑已在计算属性中处理
+}
+
+// 搜索输入处理
+const onSearchInput = () => {
+  if (searchQuery.value.trim()) {
+    generateSuggestions()
+  } else {
+    searchSuggestions.value = []
+  }
+}
+
+// 生成搜索建议
+const generateSuggestions = () => {
+  const query = searchQuery.value.trim()
+  if (!query) {
+    searchSuggestions.value = []
+    return
+  }
+  
+  // 基于工具名称和标签生成建议
+  const suggestions = new Set<string>()
+  
+  // 从工具名称中提取建议
+  aiTools.forEach(tool => {
+    if (tool.name.toLowerCase().includes(query.toLowerCase())) {
+      suggestions.add(tool.name)
+    }
+    if (tool.shortDescription.toLowerCase().includes(query.toLowerCase())) {
+      suggestions.add(tool.shortDescription)
+    }
+    tool.tags.forEach(tag => {
+      if (tag.toLowerCase().includes(query.toLowerCase())) {
+        suggestions.add(tag)
+      }
+    })
+  })
+  
+  // 从分类中提取建议
+  categories.forEach(category => {
+    if (category.name.toLowerCase().includes(query.toLowerCase())) {
+      suggestions.add(category.name)
+    }
+  })
+  
+  searchSuggestions.value = Array.from(suggestions).slice(0, 10)
+}
+
+// 选择搜索建议
+const selectSuggestion = (suggestion: string) => {
+  searchQuery.value = suggestion
+  showSuggestions.value = false
+  performSearch()
+}
+
+// 隐藏建议
+const hideSuggestions = () => {
+  // 延迟隐藏，让点击事件先执行
+  setTimeout(() => {
+    showSuggestions.value = false
+  }, 200)
+}
+
+// 搜索历史管理
+const addToHistory = (query: string) => {
+  // 移除重复项
+  const history = searchHistory.value.filter(item => item !== query)
+  // 添加到开头
+  history.unshift(query)
+  // 限制历史记录数量
+  searchHistory.value = history.slice(0, 10)
+  // 保存到localStorage
+  localStorage.setItem('ai-tools-search-history', JSON.stringify(searchHistory.value))
+}
+
+const removeFromHistory = (query: string) => {
+  searchHistory.value = searchHistory.value.filter(item => item !== query)
+  localStorage.setItem('ai-tools-search-history', JSON.stringify(searchHistory.value))
+}
+
+const clearHistory = () => {
+  searchHistory.value = []
+  localStorage.removeItem('ai-tools-search-history')
 }
 
 const toggleFilter = (key: keyof typeof filters.value, value: boolean) => {
@@ -387,6 +562,16 @@ onMounted(() => {
   if (query) {
     searchQuery.value = query
   }
+  
+  // 加载搜索历史
+  const savedHistory = localStorage.getItem('ai-tools-search-history')
+  if (savedHistory) {
+    try {
+      searchHistory.value = JSON.parse(savedHistory)
+    } catch (error) {
+      console.error('Failed to load search history:', error)
+    }
+  }
 })
 </script>
 
@@ -429,6 +614,7 @@ onMounted(() => {
 .search-container {
   flex: 1;
   max-width: 600px;
+  position: relative;
 }
 
 .search-bar {
@@ -814,18 +1000,340 @@ onMounted(() => {
   background-color: var(--primary-hover);
 }
 
+/* 搜索建议样式 */
+.search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.suggestions-section {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.suggestions-section:last-child {
+  border-bottom: none;
+}
+
+.suggestions-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: var(--bg-tertiary);
+}
+
+.suggestions-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.clear-history-btn {
+  margin-left: auto;
+  padding: 0.25rem 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.clear-history-btn:hover {
+  background-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.suggestions-list {
+  padding: 0.5rem 0;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  position: relative;
+}
+
+.suggestion-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.suggestion-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.suggestion-item span {
+  flex: 1;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.remove-btn {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.remove-btn:hover {
+  background-color: var(--error-color);
+  color: white;
+}
+
 @media (max-width: 768px) {
+  .header {
+    padding: 0.75rem 0;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .back-btn {
+    align-self: flex-start;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .search-container {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .search-input {
+    padding: 0.75rem 2.5rem 0.75rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .search-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .main-content {
+    padding: 1rem 0;
+  }
+  
+  .filters-section {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
   .filters {
     flex-direction: column;
     align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .filter-group {
+    width: 100%;
+  }
+  
+  .filter-options {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .filter-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .filter-select {
+    width: 100%;
+    padding: 0.5rem;
+  }
+  
+  .results-section {
+    padding: 1rem;
+  }
+  
+  .results-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .results-title {
+    font-size: 1.125rem;
   }
   
   .results-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .tool-card {
+    padding: 1rem;
+  }
+  
+  .tool-header {
+    margin-bottom: 0.75rem;
+  }
+  
+  .tool-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .tool-icon-svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .tool-name {
+    font-size: 1rem;
+  }
+  
+  .tool-description {
+    font-size: 0.8125rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .tool-features {
+    margin-bottom: 0.75rem;
+  }
+  
+  .feature-tag {
+    font-size: 0.6875rem;
+    padding: 0.1875rem 0.375rem;
+  }
+  
+  .tool-meta {
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .rating,
+  .user-count,
+  .category {
+    font-size: 0.8125rem;
+  }
+  
+  .tag {
+    font-size: 0.6875rem;
+    padding: 0.1875rem 0.375rem;
   }
   
   .pagination {
     flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .page-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .page-number {
+    width: 36px;
+    height: 36px;
+    font-size: 0.875rem;
+  }
+  
+  .search-suggestions {
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+  
+  .header {
+    padding: 0.5rem 0;
+  }
+  
+  .search-input {
+    padding: 0.625rem 2.25rem 0.625rem 0.625rem;
+    font-size: 0.8125rem;
+  }
+  
+  .search-btn {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+  
+  .filters-section {
+    padding: 0.75rem;
+  }
+  
+  .filter-btn {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.8125rem;
+  }
+  
+  .results-section {
+    padding: 0.75rem;
+  }
+  
+  .tool-card {
+    padding: 0.75rem;
+  }
+  
+  .tool-icon {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .tool-icon-svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .tool-name {
+    font-size: 0.875rem;
+  }
+  
+  .tool-description {
+    font-size: 0.75rem;
+  }
+  
+  .feature-tag {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.25rem;
+  }
+  
+  .rating,
+  .user-count,
+  .category {
+    font-size: 0.75rem;
+  }
+  
+  .tag {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.25rem;
   }
 }
 </style>
