@@ -4,8 +4,8 @@ require('dotenv').config();
 // 创建邮件传输器
 const createTransporter = () => {
   return nodemailer.createTransporter({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: process.env.SMTP_PORT || 587,
+    host: process.env.SMTP_HOST || 'smtp.qiye.aliyun.com',
+    port: process.env.SMTP_PORT || 465,
     secure: false, // true for 465, false for other ports
     auth: {
       user: process.env.SMTP_USER,
