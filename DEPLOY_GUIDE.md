@@ -5,7 +5,7 @@
 ### 1. 执行部署脚本
 
 ```bash
-cd /Users/wangshu/.cursor/worktrees/ai-tools/DKetU
+cd /Users/xxx/ai-tools/
 ./deploy-server.sh
 ```
 
