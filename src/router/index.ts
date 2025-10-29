@@ -3,6 +3,9 @@ import Home from '@/views/Home.vue'
 import Category from '@/views/Category.vue'
 import ToolDetail from '@/views/ToolDetail.vue'
 import Search from '@/views/Search.vue'
+import Login from '@/views/Login.vue'
+import Register from '@/views/Register.vue'
+import Profile from '@/views/Profile.vue'
 import Debug from '@/views/Debug.vue'
 
 const routes = [
@@ -27,6 +30,21 @@ const routes = [
     path: '/search',
     name: 'Search',
     component: Search
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: Profile
   },
   {
     path: '/debug',

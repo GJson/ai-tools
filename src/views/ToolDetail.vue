@@ -746,12 +746,235 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
+  .header {
+    padding: 0.75rem 0;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .back-btn {
+    align-self: flex-start;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .main-content {
+    margin-left: 0;
+    padding: 1rem 0;
+  }
+  
+  .sidebar {
+    display: none;
+  }
+  
+  .tool-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .tool-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+  }
+  
+  .tool-icon-svg {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .tool-info h1 {
+    font-size: 1.5rem;
+  }
+  
+  .tool-info p {
+    font-size: 0.875rem;
+  }
+  
+  .tool-badges {
+    justify-content: center;
+  }
+  
+  .tool-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
   .action-buttons {
     flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .action-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .tool-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .stat-item {
+    padding: 0.75rem;
+  }
+  
+  .stat-value {
+    font-size: 1.25rem;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem;
+  }
+  
+  .tool-features {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .feature-item {
+    padding: 0.75rem;
+  }
+  
+  .feature-icon {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .feature-icon .icon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .feature-content h4 {
+    font-size: 0.875rem;
+  }
+  
+  .feature-content p {
+    font-size: 0.75rem;
+  }
+  
+  .tool-tags {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .tag {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
   }
   
   .screenshots-grid {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .screenshot-item {
+    padding: 0.75rem;
+  }
+  
+  .screenshot-placeholder {
+    height: 200px;
+  }
+  
+  .screenshot-title {
+    font-size: 0.875rem;
+  }
+  
+  .screenshot-description {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+  
+  .header {
+    padding: 0.5rem 0;
+  }
+  
+  .tool-icon {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .tool-icon-svg {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .tool-info h1 {
+    font-size: 1.25rem;
+  }
+  
+  .tool-info p {
+    font-size: 0.8125rem;
+  }
+  
+  .tool-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-item {
+    padding: 0.625rem;
+  }
+  
+  .stat-value {
+    font-size: 1.125rem;
+  }
+  
+  .stat-label {
+    font-size: 0.6875rem;
+  }
+  
+  .feature-item {
+    padding: 0.625rem;
+  }
+  
+  .feature-icon {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .feature-icon .icon {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .feature-content h4 {
+    font-size: 0.8125rem;
+  }
+  
+  .feature-content p {
+    font-size: 0.6875rem;
+  }
+  
+  .tag {
+    font-size: 0.6875rem;
+    padding: 0.1875rem 0.375rem;
+  }
+  
+  .screenshot-item {
+    padding: 0.625rem;
+  }
+  
+  .screenshot-placeholder {
+    height: 150px;
+  }
+  
+  .screenshot-title {
+    font-size: 0.8125rem;
+  }
+  
+  .screenshot-description {
+    font-size: 0.6875rem;
   }
 }
 </style>

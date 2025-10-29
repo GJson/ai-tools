@@ -10,7 +10,7 @@
 ### 1. 服务器环境检查
 ```bash
 # 登录服务器
-ssh gjson@47.95.118.57
+ssh user@ip
 
 # 检查系统信息
 uname -a
@@ -53,10 +53,10 @@ npm run build
 tar -czf ai-tools-collection.tar.gz dist/
 
 # 3. 上传到服务器
-scp ai-tools-collection.tar.gz gjson@47.95.118.57:/home/gjson/
+scp ai-tools-collection.tar.gz user@ip:/home/gjson/
 
 # 4. 在服务器上部署
-ssh gjson@47.95.118.57
+ssh user@ip
 ```
 
 ## 🔧 服务器配置

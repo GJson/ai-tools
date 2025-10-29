@@ -1,11 +1,12 @@
 <template>
   <div id="app">
     <router-view />
+    <ToastContainer />
   </div>
 </template>
 
 <script setup lang="ts">
-// App.vue - 根组件
+import ToastContainer from '@/components/ToastContainer.vue'
 </script>
 
 <style>
