@@ -139,14 +139,14 @@ cat DEPLOY_GUIDE.md
 ./deploy-server.sh
 
 # 如果遇到MySQL问题，上传检查工具到服务器
-scp check-mysql.sh gjson@47.95.118.57:~/
-ssh gjson@47.95.118.57 '~/check-mysql.sh'
+scp check-mysql.sh user@ip:~/
+ssh user@ip '~/check-mysql.sh'
 ```
 
 **服务器上启动/重启：**
 ```bash
 # 登录服务器
-ssh gjson@47.95.118.57
+ssh user@ip
 
 # 进入后端目录
 cd /opt/ai-tools-backend/backend

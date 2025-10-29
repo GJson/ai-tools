@@ -34,10 +34,10 @@ cp env.example .env
 #### 服务器部署
 ```bash
 # 1. 上传代码
-scp -r backend/ gjson@47.95.118.57:/opt/ai-tools-backend/
+scp -r backend/ user@ip:/opt/ai-tools-backend/
 
 # 2. 登录服务器
-ssh gjson@47.95.118.57
+ssh user@ip
 
 # 3. 安装依赖
 cd /opt/ai-tools-backend/backend

@@ -24,7 +24,7 @@ cd /Users/wangshu/.cursor/worktrees/ai-tools/DKetU
 检查MySQL服务状态：
 ```bash
 # 在服务器上执行
-ssh gjson@47.95.118.57
+ssh user@ip
 
 # 检测MySQL服务名称
 systemctl list-units --type=service --all | grep -i mysql
@@ -63,7 +63,7 @@ docker ps | grep mysql
 **检查步骤：**
 ```bash
 # 1. 登录服务器
-ssh gjson@47.95.118.57
+ssh user@ip
 
 # 2. 检查配置文件
 cat /opt/ai-tools-backend/backend/.env | grep DB_
@@ -95,7 +95,7 @@ kill -9 <PID>
 ### 1. 检查服务状态
 
 ```bash
-ssh gjson@47.95.118.57 'pm2 status'
+ssh user@ip 'pm2 status'
 ```
 
 预期输出：
@@ -110,7 +110,7 @@ ssh gjson@47.95.118.57 'pm2 status'
 ### 2. 检查应用日志
 
 ```bash
-ssh gjson@47.95.118.57 'pm2 logs ai-tools-backend --lines 50'
+ssh user@ip 'pm2 logs ai-tools-backend --lines 50'
 ```
 
 **应该看到：**
@@ -142,7 +142,7 @@ curl -X POST https://gjson.com/api/auth/send-code \
 
 查看日志中的验证码：
 ```bash
-ssh gjson@47.95.118.57 'pm2 logs ai-tools-backend | grep "验证码"'
+ssh user@ip 'pm2 logs ai-tools-backend | grep "验证码"'
 ```
 
 ## 🔧 服务器管理命令
@@ -240,12 +240,12 @@ mysql -h localhost -u ai_tools_user -p -e "USE ai_tools; SHOW TABLES;"
 
 1. **查看详细日志：**
    ```bash
-   ssh gjson@47.95.118.57 'pm2 logs ai-tools-backend --lines 100'
+   ssh user@ip 'pm2 logs ai-tools-backend --lines 100'
    ```
 
 2. **检查MySQL：**
    ```bash
-   ssh gjson@47.95.118.57 'sudo systemctl status mysqld'
+   ssh user@ip 'sudo systemctl status mysqld'
    ```
 
 3. **重新部署：**
