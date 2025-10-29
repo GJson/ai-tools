@@ -165,3 +165,5 @@ manual-*.md
 upload-*.md
 quick-deploy.sh
 start.sh
+backend/.env.production
+backend/env.example
