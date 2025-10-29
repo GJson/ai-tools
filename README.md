@@ -208,8 +208,8 @@ SMTP_PASS=your-password
 
 遇到问题？查看：
 1. [部署指南](./DEPLOY_GUIDE.md) - 完整的故障排除指南
-2. 检查服务日志: `ssh gjson@47.95.118.57 'pm2 logs ai-tools-backend'`
-3. 检查MySQL: `ssh gjson@47.95.118.57 '~/check-mysql.sh'`
+2. 检查服务日志: `ssh user@ip 'pm2 logs ai-tools-backend'`
+3. 检查MySQL: `ssh user@ip '~/check-mysql.sh'`
 4. API健康检查: `curl https://gjson.com/api/health`
 
 ## 🤝 贡献
@@ -223,7 +223,7 @@ MIT License
 ## 📞 联系方式
 
 - **网站**: https://gjson.com
-- **服务器**: gjson@47.95.118.57
+- **服务器**: user@ip
 
 ---
 

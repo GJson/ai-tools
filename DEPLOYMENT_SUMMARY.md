@@ -124,13 +124,13 @@ curl -f https://gjson.com/api/health
 ### 检查命令
 ```bash
 # 检查服务状态
-ssh gjson@47.95.118.57 'pm2 status'
+ssh user@ip 'pm2 status'
 
 # 查看错误日志
-ssh gjson@47.95.118.57 'pm2 logs ai-tools-backend --err'
+ssh user@ip 'pm2 logs ai-tools-backend --err'
 
 # 检查端口监听
-ssh gjson@47.95.118.57 'netstat -tlnp | grep :3001'
+ssh user@ip 'netstat -tlnp | grep :3001'
 
 # 测试API
 curl -f https://gjson.com/api/health
