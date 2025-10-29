@@ -3,15 +3,26 @@ require('dotenv').config();
 
 // 创建邮件传输器
 const createTransporter = () => {
-  return nodemailer.createTransporter({
-    host: process.env.SMTP_HOST || 'smtp.qiye.aliyun.com',
-    port: process.env.SMTP_PORT || 465,
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    }
-  });
+  // 如果没有配置SMTP，返回null
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn('⚠️ SMTP未配置，邮件功能将在开发模式下模拟');
+    return null;
+  }
+
+  try {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.qiye.aliyun.com',
+      port: parseInt(process.env.SMTP_PORT) || 465,
+      secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      }
+    });
+  } catch (error) {
+    console.error('❌ 创建邮件传输器失败:', error);
+    return null;
+  }
 };
 
 // 生成6位数字验证码
@@ -22,9 +33,10 @@ const generateVerificationCode = () => {
 // 发送验证码邮件
 const sendVerificationCode = async (email, code) => {
   try {
-    // 开发环境：直接输出到控制台
-    if (process.env.NODE_ENV === 'development') {
-      console.log('📧 验证码邮件（开发模式）:');
+    // 开发环境或未配置SMTP：直接输出到控制台
+    const transporter = createTransporter();
+    if (process.env.NODE_ENV === 'development' || !transporter) {
+      console.log('📧 验证码邮件（开发/模拟模式）:');
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log(`📧 收件人: ${email}`);
       console.log(`🔐 验证码: ${code}`);
@@ -32,8 +44,6 @@ const sendVerificationCode = async (email, code) => {
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       return { success: true, messageId: 'dev-mode-' + Date.now() };
     }
-
-    const transporter = createTransporter();
     
     const mailOptions = {
       from: `"AI工具集" <${process.env.SMTP_USER}>`,
@@ -89,6 +99,14 @@ const sendVerificationCode = async (email, code) => {
 const sendWelcomeEmail = async (email, username) => {
   try {
     const transporter = createTransporter();
+    
+    // 如果没有配置SMTP，只在控制台输出
+    if (!transporter) {
+      console.log('📧 欢迎邮件（模拟模式）:');
+      console.log(`📧 收件人: ${email}`);
+      console.log(`👤 用户名: ${username}`);
+      return { success: true, messageId: 'dev-mode-' + Date.now() };
+    }
     
     const mailOptions = {
       from: `"AI工具集" <${process.env.SMTP_USER}>`,

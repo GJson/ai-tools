@@ -12,6 +12,9 @@ const { connectDB } = require('./config/database');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// 信任代理 - 在Nginx反向代理后面需要开启
+app.set('trust proxy', 1);
+
 // 安全中间件
 app.use(helmet());
 
@@ -34,7 +37,9 @@ const limiter = rateLimit({
   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // 限制每个IP 100次请求
   message: {
     error: '请求过于频繁，请稍后再试'
-  }
+  },
+  standardHeaders: true, // 返回标准的 RateLimit-* headers
+  legacyHeaders: false // 禁用 X-RateLimit-* headers
 });
 app.use('/api/', limiter);
 
