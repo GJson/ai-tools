@@ -1,5 +1,7 @@
 # AI Tools Collection
 
+![AI Tools Collection](AI-tools.png)
+
 一个现代化的AI工具集合网站，展示各种AI工具和资源。
 
 ## 🌟 特性

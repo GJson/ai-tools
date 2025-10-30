@@ -186,6 +186,11 @@
           </div>
         </section>
 
+        <!-- AI快讯卡片 -->
+        <section class="ai-news-section">
+          <AINewsCard />
+        </section>
+
         <!-- 快速访问卡片 -->
         <section class="quick-access">
           <div class="quick-access-grid">
@@ -355,6 +360,7 @@ import { aiTools, quickAccessCards, newsItems } from '@/data/tools'
 import MobileNav from '@/components/MobileNav.vue'
 import EnhancedToolCard from '@/components/EnhancedToolCard.vue'
 import ScrollReveal from '@/components/ScrollReveal.vue'
+import AINewsCard from '@/components/AINewsCard.vue'
 import { useToast } from '@/composables/useToast'
 import { useAuth } from '@/composables/useAuth'
 
@@ -529,11 +535,8 @@ const navigateToCard = (card: any) => {
   // 根据卡片类型进行不同的导航
   switch (card.id) {
     case 'ai-news':
-      // AI快讯 - 跳转到新闻页面或搜索AI相关新闻
-      router.push({
-        name: 'Search',
-        query: { q: 'AI新闻', category: 'news' }
-      })
+      // AI快讯 - 跳转到AI快讯页面
+      router.push('/ai-news')
       break
     case 'free-community':
       // 免费社群 - 跳转到社区页面或相关分类
@@ -837,6 +840,10 @@ onMounted(() => {
   background-color: var(--primary-color);
   color: white;
   border-color: var(--primary-color);
+}
+
+.ai-news-section {
+  margin: 2rem 0;
 }
 
 .quick-access {
