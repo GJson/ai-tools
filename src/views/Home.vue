@@ -76,6 +76,34 @@
                     
                     <div class="dropdown-divider"></div>
                     
+                    <router-link to="/submit-tool" class="dropdown-item" @click="closeUserMenu">
+                      <Plus class="menu-icon" :size="16" />
+                      <span>提交工具</span>
+                    </router-link>
+                    
+                    <div class="dropdown-divider"></div>
+                    
+                    <router-link 
+                      v-if="isAdmin"
+                      to="/admin/dashboard" 
+                      class="dropdown-item" 
+                      @click="closeUserMenu"
+                    >
+                      <BarChart class="menu-icon" :size="16" />
+                      <span>管理仪表板</span>
+                    </router-link>
+                    <router-link 
+                      v-if="isAdmin"
+                      to="/admin/tools" 
+                      class="dropdown-item" 
+                      @click="closeUserMenu"
+                    >
+                      <Settings class="menu-icon" :size="16" />
+                      <span>工具审核</span>
+                    </router-link>
+                    
+                    <div v-if="isAdmin" class="dropdown-divider"></div>
+                    
                     <button @click="handleLogout" class="dropdown-item logout-item">
                       <LogOut class="menu-icon" :size="16" />
                       <span>退出登录</span>
@@ -353,7 +381,8 @@ import {
   Clock,
   User,
   History,
-  LogOut
+  LogOut,
+  Plus
 } from 'lucide-vue-next'
 import { categories } from '@/data/categories'
 import { aiTools, quickAccessCards, newsItems } from '@/data/tools'
@@ -363,10 +392,13 @@ import ScrollReveal from '@/components/ScrollReveal.vue'
 import AINewsCard from '@/components/AINewsCard.vue'
 import { useToast } from '@/composables/useToast'
 import { useAuth } from '@/composables/useAuth'
+import { useAdmin } from '@/composables/useAdmin'
+import EnhancedSearch from '@/components/EnhancedSearch.vue'
 
 const router = useRouter()
 const { success, error } = useToast()
 const { user, isAuthenticated, logout } = useAuth()
+const { isAdmin } = useAdmin()
 
 // 响应式数据
 const searchQuery = ref('')

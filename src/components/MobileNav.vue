@@ -1,15 +1,14 @@
 <template>
   <div class="mobile-nav">
-    <!-- 移动端顶部导航栏 -->
+    <!-- 顶部导航栏 -->
     <header class="mobile-header">
-      <div class="mobile-header-content">
-        <button @click="toggleMenu" class="menu-toggle" :class="{ active: isMenuOpen }">
-          <span class="hamburger-line"></span>
-          <span class="hamburger-line"></span>
-          <span class="hamburger-line"></span>
+      <div class="header-content">
+        <button @click="toggleSidebar" class="menu-btn">
+          <Menu v-if="!sidebarOpen" class="menu-icon" :size="24" />
+          <X v-else class="menu-icon" :size="24" />
         </button>
         
-        <div class="mobile-logo">
+        <div class="logo">
           <div class="logo-icon">
             <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
               <path d="M16 2L20 8H28L24 14L28 20H20L16 26L12 20H4L8 14L4 8H12L16 2Z" fill="currentColor"/>
@@ -18,318 +17,307 @@
           <span class="logo-text">AI工具集</span>
         </div>
         
-        <div class="mobile-header-actions">
-          <button @click="toggleSearch" class="search-toggle">
-            <Search class="search-icon" />
+        <div class="header-actions">
+          <button @click="toggleSearch" class="search-btn">
+            <Search class="search-icon" :size="20" />
           </button>
-          <button @click="toggleUserMenu" class="user-toggle">
-            <User class="user-icon" />
+          <button v-if="isAuthenticated" @click="toggleUserMenu" class="user-btn">
+            <img 
+              :src="user?.avatar || defaultAvatar" 
+              :alt="user?.username"
+              class="user-avatar"
+            />
+          </button>
+          <button v-else @click="goToLogin" class="login-btn">
+            登录
           </button>
         </div>
       </div>
     </header>
 
-    <!-- 移动端侧边菜单 -->
-    <div v-if="isMenuOpen" class="mobile-menu-overlay" @click="closeMenu">
-      <div class="mobile-menu" @click.stop>
-        <div class="mobile-menu-header">
-          <h3>AI工具分类</h3>
-          <button @click="closeMenu" class="close-btn">
-            <X class="close-icon" />
-          </button>
-        </div>
-        
-        <nav class="mobile-menu-nav">
-          <div 
-            v-for="category in categories" 
-            :key="category.id"
-            class="mobile-nav-item"
-            @click="navigateToCategory(category)"
-          >
-            <div class="mobile-nav-icon" :style="{ backgroundColor: category.color + '20', color: category.color }">
-              <component :is="category.icon" class="icon" />
-            </div>
-            <div class="mobile-nav-content">
-              <span class="mobile-nav-text">{{ category.name }}</span>
-              <span class="mobile-nav-count">{{ category.toolCount }}个工具</span>
-            </div>
-            <ChevronRight class="mobile-nav-arrow" />
-          </div>
-        </nav>
+    <!-- 搜索栏 -->
+    <div v-if="showSearch" class="mobile-search">
+      <div class="search-container">
+        <input
+          v-model="searchQuery"
+          @keyup.enter="handleSearch"
+          @input="onSearchInput"
+          type="text"
+          placeholder="搜索AI工具..."
+          class="search-input"
+          ref="searchInput"
+        />
+        <button @click="handleSearch" class="search-submit">
+          <Search class="search-icon" :size="18" />
+        </button>
+        <button @click="toggleSearch" class="search-cancel">
+          <X class="cancel-icon" :size="18" />
+        </button>
       </div>
-    </div>
-
-    <!-- 移动端搜索框 -->
-    <div v-if="isSearchOpen" class="mobile-search-overlay" @click="closeSearch">
-      <div class="mobile-search" @click.stop>
-        <div class="mobile-search-header">
-          <div class="mobile-search-bar">
-            <Search class="search-icon" />
-            <input 
-              type="text" 
-              placeholder="搜索AI工具..." 
-              v-model="searchQuery"
-              @keyup.enter="performSearch"
-              @input="onSearchInput"
-              @focus="showSuggestions = true"
-              @blur="hideSuggestions"
-              class="mobile-search-input"
-              ref="searchInput"
-            />
-            <button @click="performSearch" class="mobile-search-btn">搜索</button>
+      
+      <!-- 搜索建议 -->
+      <div v-if="searchSuggestions.length > 0 || searchHistory.length > 0" class="search-suggestions">
+        <div v-if="searchHistory.length > 0 && !searchQuery.trim()" class="suggestions-section">
+          <div class="suggestions-header">
+            <Clock class="suggestions-icon" :size="16" />
+            <span>搜索历史</span>
+            <button @click="clearHistory" class="clear-btn">清除</button>
           </div>
-          <button @click="closeSearch" class="close-search-btn">
-            <X class="close-icon" />
-          </button>
+          <div class="suggestions-list">
+            <div 
+              v-for="(item, index) in searchHistory.slice(0, 5)" 
+              :key="index"
+              class="suggestion-item"
+              @click="selectSuggestion(item)"
+            >
+              <Clock class="suggestion-icon" :size="14" />
+              <span>{{ item }}</span>
+              <button @click.stop="removeFromHistory(item)" class="remove-btn">×</button>
+            </div>
+          </div>
         </div>
         
-        <!-- 移动端搜索建议 -->
-        <div v-if="showSuggestions && (searchSuggestions.length > 0 || searchHistory.length > 0)" class="mobile-search-suggestions">
-          <!-- 搜索历史 -->
-          <div v-if="searchHistory.length > 0 && !searchQuery.trim()" class="mobile-suggestions-section">
-            <div class="mobile-suggestions-header">
-              <Clock class="suggestions-icon" />
-              <span>搜索历史</span>
-              <button @click="clearHistory" class="clear-history-btn">清除</button>
-            </div>
-            <div class="mobile-suggestions-list">
-              <div 
-                v-for="(item, index) in searchHistory.slice(0, 5)" 
-                :key="index"
-                class="mobile-suggestion-item"
-                @click="selectSuggestion(item)"
-              >
-                <Clock class="suggestion-icon" />
-                <span>{{ item }}</span>
-                <button @click.stop="removeFromHistory(item)" class="remove-btn">×</button>
-              </div>
-            </div>
+        <div v-if="searchSuggestions.length > 0" class="suggestions-section">
+          <div class="suggestions-header">
+            <Search class="suggestions-icon" :size="16" />
+            <span>搜索建议</span>
           </div>
-          
-          <!-- 热门搜索 -->
-          <div v-if="!searchQuery.trim()" class="mobile-suggestions-section">
-            <div class="mobile-suggestions-header">
-              <TrendingUp class="suggestions-icon" />
-              <span>热门搜索</span>
-            </div>
-            <div class="mobile-suggestions-list">
-              <div 
-                v-for="(term, index) in popularSearches" 
-                :key="index"
-                class="mobile-suggestion-item"
-                @click="selectSuggestion(term)"
-              >
-                <TrendingUp class="suggestion-icon" />
-                <span>{{ term }}</span>
-              </div>
-            </div>
-          </div>
-          
-          <!-- 搜索建议 -->
-          <div v-if="searchSuggestions.length > 0" class="mobile-suggestions-section">
-            <div class="mobile-suggestions-header">
-              <Search class="suggestions-icon" />
-              <span>搜索建议</span>
-            </div>
-            <div class="mobile-suggestions-list">
-              <div 
-                v-for="(suggestion, index) in searchSuggestions.slice(0, 8)" 
-                :key="index"
-                class="mobile-suggestion-item"
-                @click="selectSuggestion(suggestion)"
-              >
-                <Search class="suggestion-icon" />
-                <span>{{ suggestion }}</span>
-              </div>
+          <div class="suggestions-list">
+            <div 
+              v-for="(suggestion, index) in searchSuggestions.slice(0, 8)" 
+              :key="index"
+              class="suggestion-item"
+              @click="selectSuggestion(suggestion)"
+            >
+              <Search class="suggestion-icon" :size="14" />
+              <span>{{ suggestion }}</span>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 移动端用户菜单 -->
-    <div v-if="isUserMenuOpen" class="mobile-user-overlay" @click="closeUserMenu">
-      <div class="mobile-user-menu" @click.stop>
-        <div class="mobile-user-header">
-          <div v-if="isAuthenticated" class="user-info">
+    <!-- 侧边栏 -->
+    <div v-if="sidebarOpen" class="mobile-sidebar" @click="closeSidebar">
+      <div class="sidebar-content" @click.stop>
+        <div class="sidebar-header">
+          <div class="user-info" v-if="isAuthenticated">
             <img 
               :src="user?.avatar || defaultAvatar" 
               :alt="user?.username"
               class="user-avatar"
             />
             <div class="user-details">
-              <h4 class="user-name">{{ user?.username }}</h4>
+              <h3 class="username">{{ user?.username }}</h3>
               <p class="user-email">{{ user?.email }}</p>
             </div>
           </div>
-          <div v-else class="user-info">
-            <div class="user-avatar">
-              <User class="avatar-icon" :size="24" />
-            </div>
-            <div class="user-details">
-              <h4 class="user-name">未登录</h4>
-              <p class="user-email">点击登录享受更多功能</p>
-            </div>
-          </div>
-          <button @click="closeUserMenu" class="close-btn">
-            <X class="close-icon" />
-          </button>
-        </div>
-        
-        <nav class="mobile-user-nav">
-          <div v-if="isAuthenticated" class="user-menu-items">
-            <router-link to="/profile" class="user-menu-item" @click="closeUserMenu">
-              <User class="menu-icon" :size="20" />
-              <span>个人中心</span>
-            </router-link>
-            <router-link to="/favorites" class="user-menu-item" @click="closeUserMenu">
-              <Heart class="menu-icon" :size="20" />
-              <span>我的收藏</span>
-            </router-link>
-            <router-link to="/history" class="user-menu-item" @click="closeUserMenu">
-              <History class="menu-icon" :size="20" />
-              <span>使用历史</span>
-            </router-link>
-            <router-link to="/ratings" class="user-menu-item" @click="closeUserMenu">
-              <Star class="menu-icon" :size="20" />
-              <span>我的评分</span>
-            </router-link>
-            <div class="menu-divider"></div>
-            <button @click="handleLogout" class="user-menu-item logout-item">
-              <LogOut class="menu-icon" :size="20" />
-              <span>退出登录</span>
+          <div v-else class="login-prompt">
+            <button @click="goToLogin" class="login-btn">
+              <User class="btn-icon" :size="16" />
+              登录
             </button>
           </div>
-          <div v-else class="user-menu-items">
-            <router-link to="/login" class="user-menu-item" @click="closeUserMenu">
-              <LogIn class="menu-icon" :size="20" />
-              <span>登录</span>
-            </router-link>
-            <router-link to="/register" class="user-menu-item" @click="closeUserMenu">
-              <UserPlus class="menu-icon" :size="20" />
-              <span>注册</span>
-            </router-link>
+        </div>
+        
+        <nav class="sidebar-nav">
+          <div class="nav-section">
+            <h4 class="nav-title">主要功能</h4>
+            <div class="nav-items">
+              <router-link to="/" class="nav-item" @click="closeSidebar">
+                <Home class="nav-icon" :size="18" />
+                <span>首页</span>
+              </router-link>
+              <router-link to="/search" class="nav-item" @click="closeSidebar">
+                <Search class="nav-icon" :size="18" />
+                <span>搜索</span>
+              </router-link>
+              <router-link to="/ai-news" class="nav-item" @click="closeSidebar">
+                <Newspaper class="nav-icon" :size="18" />
+                <span>AI快讯</span>
+              </router-link>
+            </div>
+          </div>
+          
+          <div v-if="isAuthenticated" class="nav-section">
+            <h4 class="nav-title">个人中心</h4>
+            <div class="nav-items">
+              <router-link to="/profile" class="nav-item" @click="closeSidebar">
+                <User class="nav-icon" :size="18" />
+                <span>个人中心</span>
+              </router-link>
+              <router-link to="/favorites" class="nav-item" @click="closeSidebar">
+                <Heart class="nav-icon" :size="18" />
+                <span>我的收藏</span>
+              </router-link>
+              <router-link to="/history" class="nav-item" @click="closeSidebar">
+                <History class="nav-icon" :size="18" />
+                <span>使用历史</span>
+              </router-link>
+              <router-link to="/ratings" class="nav-item" @click="closeSidebar">
+                <Star class="nav-icon" :size="18" />
+                <span>我的评分</span>
+              </router-link>
+            </div>
+          </div>
+          
+          <div v-if="isAuthenticated" class="nav-section">
+            <h4 class="nav-title">工具管理</h4>
+            <div class="nav-items">
+              <router-link to="/submit-tool" class="nav-item" @click="closeSidebar">
+                <Plus class="nav-icon" :size="18" />
+                <span>提交工具</span>
+              </router-link>
+            </div>
+          </div>
+          
+          <div v-if="isAdmin" class="nav-section">
+            <h4 class="nav-title">管理功能</h4>
+            <div class="nav-items">
+              <router-link to="/admin/dashboard" class="nav-item" @click="closeSidebar">
+                <BarChart class="nav-icon" :size="18" />
+                <span>管理仪表板</span>
+              </router-link>
+              <router-link to="/admin/tools" class="nav-item" @click="closeSidebar">
+                <Settings class="nav-icon" :size="18" />
+                <span>工具审核</span>
+              </router-link>
+            </div>
+          </div>
+          
+          <div class="nav-section">
+            <h4 class="nav-title">工具分类</h4>
+            <div class="nav-items">
+              <div 
+                v-for="category in categories" 
+                :key="category.id"
+                class="nav-item"
+                @click="navigateToCategory(category); closeSidebar()"
+              >
+                <component :is="category.icon" class="nav-icon" :size="18" />
+                <span>{{ category.name }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div v-if="isAuthenticated" class="nav-section">
+            <button @click="handleLogout" class="logout-btn">
+              <LogOut class="btn-icon" :size="16" />
+              退出登录
+            </button>
           </div>
         </nav>
       </div>
     </div>
+
+    <!-- 底部导航栏 -->
+    <nav class="bottom-nav">
+      <router-link to="/" class="nav-tab" :class="{ active: $route.name === 'Home' }">
+        <Home class="tab-icon" :size="20" />
+        <span class="tab-label">首页</span>
+      </router-link>
+      
+      <router-link to="/search" class="nav-tab" :class="{ active: $route.name === 'EnhancedSearch' }">
+        <Search class="tab-icon" :size="20" />
+        <span class="tab-label">搜索</span>
+      </router-link>
+      
+      <router-link to="/ai-news" class="nav-tab" :class="{ active: $route.name === 'AINews' }">
+        <Newspaper class="tab-icon" :size="20" />
+        <span class="tab-label">快讯</span>
+      </router-link>
+      
+      <router-link v-if="isAuthenticated" to="/favorites" class="nav-tab" :class="{ active: $route.name === 'Favorites' }">
+        <Heart class="tab-icon" :size="20" />
+        <span class="tab-label">收藏</span>
+      </router-link>
+      
+      <router-link v-if="isAuthenticated" to="/profile" class="nav-tab" :class="{ active: $route.name === 'Profile' }">
+        <User class="tab-icon" :size="20" />
+        <span class="tab-label">我的</span>
+      </router-link>
+      
+      <button v-else @click="goToLogin" class="nav-tab">
+        <User class="tab-icon" :size="20" />
+        <span class="tab-label">登录</span>
+      </button>
+    </nav>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { 
-  Search, 
+  Menu, 
   X, 
-  ChevronRight,
-  Clock,
-  TrendingUp,
-  User,
-  Heart,
-  History,
-  Star,
-  LogIn,
-  LogOut,
-  UserPlus
+  Search, 
+  Home, 
+  User, 
+  Heart, 
+  History, 
+  Star, 
+  Plus, 
+  BarChart, 
+  Settings, 
+  LogOut, 
+  Clock, 
+  Newspaper
 } from 'lucide-vue-next'
 import { categories } from '@/data/categories'
-import { aiTools } from '@/data/tools'
 import { useAuth } from '@/composables/useAuth'
+import { useAdmin } from '@/composables/useAdmin'
 import { useToast } from '@/composables/useToast'
 
 const router = useRouter()
+const route = useRoute()
 const { user, isAuthenticated, logout } = useAuth()
+const { isAdmin } = useAdmin()
 const { success } = useToast()
 
 // 响应式数据
-const isMenuOpen = ref(false)
-const isSearchOpen = ref(false)
-const isUserMenuOpen = ref(false)
+const sidebarOpen = ref(false)
+const showSearch = ref(false)
 const searchQuery = ref('')
-const showSuggestions = ref(false)
 const searchSuggestions = ref<string[]>([])
 const searchHistory = ref<string[]>([])
 const searchInput = ref<HTMLInputElement>()
-
 const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
 
-// 热门搜索词
-const popularSearches = ref([
-  'ChatGPT',
-  'AI写作',
-  'AI绘画',
-  '免费工具',
-  'AI编程',
-  'AI视频',
-  'AI办公',
-  'AI设计'
-])
-
 // 方法
-const toggleMenu = () => {
-  isMenuOpen.value = !isMenuOpen.value
-  if (isMenuOpen.value) {
-    isSearchOpen.value = false
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value
+  if (sidebarOpen.value) {
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
   }
 }
 
-const closeMenu = () => {
-  isMenuOpen.value = false
+const closeSidebar = () => {
+  sidebarOpen.value = false
+  document.body.style.overflow = ''
 }
 
 const toggleSearch = () => {
-  isSearchOpen.value = !isSearchOpen.value
-  if (isSearchOpen.value) {
-    isMenuOpen.value = false
-    isUserMenuOpen.value = false
-    // 延迟聚焦搜索框
+  showSearch.value = !showSearch.value
+  if (showSearch.value) {
     setTimeout(() => {
       searchInput.value?.focus()
     }, 100)
   }
 }
 
-const toggleUserMenu = () => {
-  isUserMenuOpen.value = !isUserMenuOpen.value
-  if (isUserMenuOpen.value) {
-    isMenuOpen.value = false
-    isSearchOpen.value = false
-  }
-}
-
-const closeUserMenu = () => {
-  isUserMenuOpen.value = false
-}
-
-const handleLogout = () => {
-  logout()
-  success('已退出登录')
-  closeUserMenu()
-}
-
-const closeSearch = () => {
-  isSearchOpen.value = false
-}
-
-const navigateToCategory = (category: any) => {
-  router.push({
-    name: 'Category',
-    params: { id: category.id }
-  })
-  closeMenu()
-}
-
-// 搜索相关方法
-const performSearch = () => {
+const handleSearch = () => {
   if (searchQuery.value.trim()) {
     addToHistory(searchQuery.value.trim())
     router.push({
-      name: 'Search',
+      name: 'EnhancedSearch',
       query: { q: searchQuery.value }
     })
+    showSearch.value = false
+    searchQuery.value = ''
   }
-  closeSearch()
 }
 
 const onSearchInput = () => {
@@ -347,41 +335,16 @@ const generateSuggestions = () => {
     return
   }
   
+  // 基于工具名称和标签生成建议
   const suggestions = new Set<string>()
   
-  aiTools.forEach(tool => {
-    if (tool.name.toLowerCase().includes(query.toLowerCase())) {
-      suggestions.add(tool.name)
-    }
-    if (tool.shortDescription.toLowerCase().includes(query.toLowerCase())) {
-      suggestions.add(tool.shortDescription)
-    }
-    tool.tags.forEach(tag => {
-      if (tag.toLowerCase().includes(query.toLowerCase())) {
-        suggestions.add(tag)
-      }
-    })
-  })
-  
-  categories.forEach(category => {
-    if (category.name.toLowerCase().includes(query.toLowerCase())) {
-      suggestions.add(category.name)
-    }
-  })
-  
-  searchSuggestions.value = Array.from(suggestions).slice(0, 10)
+  // 这里可以添加更多搜索建议逻辑
+  searchSuggestions.value = Array.from(suggestions).slice(0, 8)
 }
 
 const selectSuggestion = (suggestion: string) => {
   searchQuery.value = suggestion
-  showSuggestions.value = false
-  performSearch()
-}
-
-const hideSuggestions = () => {
-  setTimeout(() => {
-    showSuggestions.value = false
-  }, 200)
+  handleSearch()
 }
 
 const addToHistory = (query: string) => {
@@ -401,7 +364,33 @@ const clearHistory = () => {
   localStorage.removeItem('ai-tools-search-history')
 }
 
+const navigateToCategory = (category: any) => {
+  router.push({
+    name: 'Category',
+    params: { id: category.id }
+  })
+}
+
+const goToLogin = () => {
+  router.push('/login')
+  closeSidebar()
+}
+
+const handleLogout = () => {
+  logout()
+  success('已退出登录')
+  closeSidebar()
+}
+
+// 监听路由变化，关闭侧边栏
+watch(() => route.path, () => {
+  closeSidebar()
+  showSearch.value = false
+})
+
+// 初始化
 onMounted(() => {
+  // 加载搜索历史
   const savedHistory = localStorage.getItem('ai-tools-search-history')
   if (savedHistory) {
     try {
@@ -410,12 +399,32 @@ onMounted(() => {
       console.error('Failed to load search history:', error)
     }
   }
+  
+  // 监听屏幕尺寸变化
+  const handleResize = () => {
+    if (window.innerWidth > 768) {
+      closeSidebar()
+      showSearch.value = false
+    }
+  }
+  
+  window.addEventListener('resize', handleResize)
+  
+  // 清理事件监听器
+  onUnmounted(() => {
+    window.removeEventListener('resize', handleResize)
+    document.body.style.overflow = ''
+  })
 })
+
+// 导入 onUnmounted
+import { onUnmounted } from 'vue'
 </script>
 
 <style scoped>
 .mobile-nav {
-  display: none;
+  position: relative;
+  z-index: 1000;
 }
 
 .mobile-header {
@@ -423,55 +432,39 @@ onMounted(() => {
   top: 0;
   left: 0;
   right: 0;
+  height: 60px;
   background-color: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
-  z-index: 1000;
-  height: 60px;
+  z-index: 1001;
 }
 
-.mobile-header-content {
+.header-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 60px;
+  height: 100%;
   padding: 0 1rem;
 }
 
-.menu-toggle {
+.menu-btn {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   width: 40px;
   height: 40px;
   background: none;
   border: none;
+  color: var(--text-primary);
   cursor: pointer;
-  padding: 0;
+  border-radius: var(--radius-md);
+  transition: background-color 0.2s ease;
 }
 
-.hamburger-line {
-  width: 20px;
-  height: 2px;
-  background-color: var(--text-primary);
-  margin: 2px 0;
-  transition: all 0.3s ease;
-  transform-origin: center;
+.menu-btn:hover {
+  background-color: var(--bg-tertiary);
 }
 
-.menu-toggle.active .hamburger-line:nth-child(1) {
-  transform: rotate(45deg) translate(5px, 5px);
-}
-
-.menu-toggle.active .hamburger-line:nth-child(2) {
-  opacity: 0;
-}
-
-.menu-toggle.active .hamburger-line:nth-child(3) {
-  transform: rotate(-45deg) translate(7px, -6px);
-}
-
-.mobile-logo {
+.logo {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -486,7 +479,14 @@ onMounted(() => {
   color: var(--primary-color);
 }
 
-.search-toggle {
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-btn,
+.user-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -494,252 +494,119 @@ onMounted(() => {
   height: 40px;
   background: none;
   border: none;
+  color: var(--text-primary);
   cursor: pointer;
-  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  transition: background-color 0.2s ease;
 }
 
-.search-icon {
-  width: 20px;
-  height: 20px;
+.search-btn:hover,
+.user-btn:hover {
+  background-color: var(--bg-tertiary);
 }
 
-.mobile-menu-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1001;
-  display: flex;
-  justify-content: flex-start;
-}
-
-.mobile-menu {
-  width: 280px;
-  height: 100%;
-  background-color: var(--bg-primary);
-  overflow-y: auto;
-  animation: slideInLeft 0.3s ease-out;
-}
-
-@keyframes slideInLeft {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-.mobile-menu-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.mobile-menu-header h3 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.close-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.user-avatar {
   width: 32px;
   height: 32px;
-  background: none;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.login-btn {
+  padding: 0.5rem 1rem;
+  background: var(--primary-color);
+  color: white;
   border: none;
-  cursor: pointer;
-  color: var(--text-muted);
   border-radius: var(--radius-md);
-  transition: all 0.2s ease;
-}
-
-.close-btn:hover {
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-.close-icon {
-  width: 18px;
-  height: 18px;
-}
-
-.mobile-menu-nav {
-  padding: 0.5rem 0;
-}
-
-.mobile-nav-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
   cursor: pointer;
-  transition: background-color 0.2s ease;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.mobile-nav-item:hover {
-  background-color: var(--bg-tertiary);
-}
-
-.mobile-nav-icon {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-  transition: all 0.2s ease;
-}
-
-.mobile-nav-icon .icon {
-  width: 20px;
-  height: 20px;
-}
-
-.mobile-nav-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.mobile-nav-text {
-  font-weight: 500;
-  color: var(--text-primary);
   font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-.mobile-nav-count {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.mobile-nav-arrow {
-  width: 16px;
-  height: 16px;
-  color: var(--text-muted);
-}
-
-.mobile-search-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1002;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 80px;
+.login-btn:hover {
+  background: var(--primary-hover);
 }
 
 .mobile-search {
-  width: 90%;
-  max-width: 500px;
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
   background-color: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xl);
-  animation: slideInDown 0.3s ease-out;
-}
-
-@keyframes slideInDown {
-  from {
-    transform: translateY(-50px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.mobile-search-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
   border-bottom: 1px solid var(--border-color);
+  z-index: 1000;
+  padding: 1rem;
 }
 
-.mobile-search-bar {
-  flex: 1;
+.search-container {
   display: flex;
   align-items: center;
-  background-color: var(--bg-tertiary);
+  gap: 0.5rem;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.75rem;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.mobile-search-bar .search-icon {
-  padding: 0.75rem;
-  color: var(--text-muted);
-}
-
-.mobile-search-input {
-  flex: 1;
-  padding: 0.75rem 0;
-  border: none;
-  outline: none;
-  background: transparent;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   font-size: 1rem;
 }
 
-.mobile-search-btn {
-  padding: 0.75rem 1rem;
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
 }
 
-.mobile-search-btn:hover {
-  background-color: var(--primary-hover);
-}
-
-.close-search-btn {
+.search-submit,
+.search-cancel {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: none;
+  width: 40px;
+  height: 40px;
+  background: var(--primary-color);
+  color: white;
   border: none;
-  cursor: pointer;
-  color: var(--text-muted);
   border-radius: var(--radius-md);
-  transition: all 0.2s ease;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.close-search-btn:hover {
-  background-color: var(--bg-tertiary);
+.search-cancel {
+  background: var(--bg-tertiary);
   color: var(--text-primary);
 }
 
-.mobile-search-suggestions {
-  max-height: 400px;
+.search-submit:hover {
+  background: var(--primary-hover);
+}
+
+.search-cancel:hover {
+  background: var(--border-color);
+}
+
+.search-suggestions {
+  margin-top: 1rem;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-height: 300px;
   overflow-y: auto;
 }
 
-.mobile-suggestions-section {
+.suggestions-section {
   border-bottom: 1px solid var(--border-color);
 }
 
-.mobile-suggestions-section:last-child {
+.suggestions-section:last-child {
   border-bottom: none;
 }
 
-.mobile-suggestions-header {
+.suggestions-header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -750,12 +617,7 @@ onMounted(() => {
   background-color: var(--bg-tertiary);
 }
 
-.suggestions-icon {
-  width: 16px;
-  height: 16px;
-}
-
-.clear-history-btn {
+.clear-btn {
   margin-left: auto;
   padding: 0.25rem 0.5rem;
   background: none;
@@ -767,45 +629,43 @@ onMounted(() => {
   transition: all 0.2s ease;
 }
 
-.clear-history-btn:hover {
+.clear-btn:hover {
   background-color: var(--border-color);
   color: var(--text-primary);
 }
 
-.mobile-suggestions-list {
+.suggestions-list {
   padding: 0.5rem 0;
 }
 
-.mobile-suggestion-item {
+.suggestion-item {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 1rem;
   cursor: pointer;
   transition: background-color 0.2s ease;
   position: relative;
 }
 
-.mobile-suggestion-item:hover {
+.suggestion-item:hover {
   background-color: var(--bg-tertiary);
 }
 
 .suggestion-icon {
-  width: 16px;
-  height: 16px;
   color: var(--text-muted);
   flex-shrink: 0;
 }
 
-.mobile-suggestion-item span {
+.suggestion-item span {
   flex: 1;
   color: var(--text-primary);
   font-size: 0.875rem;
 }
 
 .remove-btn {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border: none;
   background: none;
   color: var(--text-muted);
@@ -824,86 +684,48 @@ onMounted(() => {
   color: white;
 }
 
-/* 用户菜单样式 */
-.mobile-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.user-toggle {
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.user-toggle:hover {
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-.user-icon {
-  width: 20px;
-  height: 20px;
-}
-
-.mobile-user-overlay {
+.mobile-sidebar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  z-index: 1000;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 1rem;
+  z-index: 1002;
+  animation: fadeIn 0.2s ease-out;
 }
 
-.mobile-user-menu {
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.sidebar-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100%;
   background-color: var(--bg-primary);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  width: 100%;
-  max-width: 400px;
-  max-height: 80vh;
-  overflow: hidden;
-  box-shadow: var(--shadow-xl);
-  animation: slideUp 0.3s ease-out;
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+  animation: slideIn 0.2s ease-out;
 }
 
-@keyframes slideUp {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
 }
 
-.mobile-user-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.5rem;
+.sidebar-header {
+  padding: 1rem;
   border-bottom: 1px solid var(--border-color);
-  position: relative;
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  flex: 1;
+  gap: 0.75rem;
 }
 
 .user-avatar {
@@ -912,14 +734,6 @@ onMounted(() => {
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--bg-tertiary);
-}
-
-.avatar-icon {
-  color: var(--text-muted);
 }
 
 .user-details {
@@ -927,7 +741,7 @@ onMounted(() => {
   min-width: 0;
 }
 
-.user-name {
+.username {
   font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -946,86 +760,231 @@ onMounted(() => {
   text-overflow: ellipsis;
 }
 
-.mobile-user-nav {
+.login-prompt {
+  text-align: center;
+}
+
+.login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.login-btn:hover {
+  background: var(--primary-hover);
+}
+
+.sidebar-nav {
   padding: 1rem 0;
 }
 
-.user-menu-items {
+.nav-section {
+  margin-bottom: 1.5rem;
+}
+
+.nav-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.5rem 0;
+  padding: 0 1rem;
+}
+
+.nav-items {
   display: flex;
   flex-direction: column;
 }
 
-.user-menu-item {
+.nav-item {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.5rem;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
   color: var(--text-primary);
   text-decoration: none;
   transition: background-color 0.2s ease;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
   cursor: pointer;
   font-size: 0.875rem;
 }
 
-.user-menu-item:hover {
+.nav-item:hover {
   background-color: var(--bg-tertiary);
 }
 
-.logout-item {
-  color: var(--error-color);
-}
-
-.logout-item:hover {
-  background-color: rgba(239, 68, 68, 0.1);
-}
-
-.menu-icon {
-  width: 20px;
-  height: 20px;
+.nav-icon {
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
 }
 
-.menu-divider {
-  height: 1px;
-  background-color: var(--border-color);
-  margin: 0.5rem 0;
-}
-
-.close-btn {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: var(--text-muted);
-  border-radius: var(--radius-md);
+.logout-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  color: var(--error-color);
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s ease;
+  margin: 0 1rem;
+  border-radius: var(--radius-md);
 }
 
-.close-btn:hover {
-  background-color: var(--bg-tertiary);
+.logout-btn:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.btn-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: var(--bg-primary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  z-index: 1000;
+}
+
+.nav-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-tab.active {
+  color: var(--primary-color);
+}
+
+.nav-tab:hover {
   color: var(--text-primary);
 }
 
-.close-icon {
-  width: 18px;
-  height: 18px;
+.tab-icon {
+  width: 20px;
+  height: 20px;
 }
 
-/* 移动端显示 */
+.tab-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* 桌面端隐藏移动端导航 */
+@media (min-width: 769px) {
+  .mobile-nav {
+    display: none;
+  }
+}
+
+/* 移动端优化 */
 @media (max-width: 768px) {
   .mobile-nav {
     display: block;
+  }
+  
+  .header-content {
+    padding: 0 0.75rem;
+  }
+  
+  .logo-text {
+    font-size: 1rem;
+  }
+  
+  .mobile-search {
+    padding: 0.75rem;
+  }
+  
+  .search-input {
+    font-size: 0.875rem;
+  }
+  
+  .sidebar-content {
+    width: 260px;
+  }
+  
+  .nav-item {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+  
+  .nav-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-content {
+    padding: 0 0.5rem;
+  }
+  
+  .logo-text {
+    font-size: 0.875rem;
+  }
+  
+  .mobile-search {
+    padding: 0.5rem;
+  }
+  
+  .sidebar-content {
+    width: 240px;
+  }
+  
+  .nav-item {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .tab-label {
+    font-size: 0.6875rem;
+  }
+}
+
+/* 触摸优化 */
+@media (hover: none) and (pointer: coarse) {
+  .nav-item,
+  .suggestion-item,
+  .menu-btn,
+  .search-btn,
+  .user-btn {
+    min-height: 44px; /* iOS 推荐的最小触摸目标 */
+  }
+  
+  .nav-tab {
+    min-height: 60px;
   }
 }
 </style>

@@ -60,10 +60,12 @@
                   <ExternalLink class="btn-icon" />
                   访问工具
                 </a>
-                <button class="btn btn-secondary" @click="toggleFavorite">
-                  <Heart class="btn-icon" :class="{ filled: isFavorite }" />
-                  {{ isFavorite ? '已收藏' : '收藏' }}
-                </button>
+                <FavoriteButton 
+                  :tool-id="toolId" 
+                  :tool-name="tool?.name"
+                  variant="outline"
+                  size="md"
+                />
               </div>
             </div>
 
@@ -165,6 +167,9 @@
           </div>
         </div>
       </div>
+      
+      <!-- 评分系统 -->
+      <RatingSystem :tool-id="toolId" :tool-name="tool?.name" />
     </div>
 
     <!-- 截图模态框 -->
@@ -200,15 +205,20 @@ import {
 } from 'lucide-vue-next'
 import { aiTools } from '@/data/tools'
 import type { AITool } from '@/types'
+import RatingSystem from '@/components/RatingSystem.vue'
+import FavoriteButton from '@/components/FavoriteButton.vue'
+import { useHistory } from '@/composables/useHistory'
 
 const router = useRouter()
 const route = useRoute()
+const { trackToolView } = useHistory()
 
 // 响应式数据
 const tool = ref<AITool | null>(null)
 const isFavorite = ref(false)
 const showScreenshotModal = ref(false)
 const selectedScreenshot = ref('')
+const toolId = ref<string>('')
 
 // 模拟用户评价数据
 const reviews = ref([
@@ -261,8 +271,8 @@ const goBack = () => {
 }
 
 const loadTool = () => {
-  const toolId = route.params.id as string
-  tool.value = aiTools.find(t => t.id === toolId) || null
+  toolId.value = route.params.id as string
+  tool.value = aiTools.find(t => t.id === toolId.value) || null
 }
 
 const toggleFavorite = () => {
@@ -295,6 +305,14 @@ const navigateToTool = (relatedTool: AITool) => {
 // 生命周期
 onMounted(() => {
   loadTool()
+  
+  // 追踪工具浏览
+  if (tool.value) {
+    trackToolView(parseInt(toolId.value), tool.value.name, {
+      category: tool.value.category,
+      pricing: tool.value.pricing
+    })
+  }
 })
 </script>
 

@@ -12,6 +12,12 @@ import History from '@/views/History.vue'
 import Ratings from '@/views/Ratings.vue'
 import AINews from '@/views/AINews.vue'
 import AINewsDetail from '@/views/AINewsDetail.vue'
+import ToolSubmission from '@/views/ToolSubmission.vue'
+import AdminTools from '@/views/AdminTools.vue'
+import AdminDashboard from '@/views/AdminDashboard.vue'
+import EnhancedSearch from '@/views/EnhancedSearch.vue'
+import MobileSearch from '@/views/MobileSearch.vue'
+import MobileToolDetail from '@/views/MobileToolDetail.vue'
 import Debug from '@/views/Debug.vue'
 
 const routes = [
@@ -77,6 +83,36 @@ const routes = [
     name: 'AINewsDetail',
     component: AINewsDetail,
     props: true
+  },
+  {
+    path: '/submit-tool',
+    name: 'ToolSubmission',
+    component: ToolSubmission
+  },
+  {
+  path: '/admin/tools',
+  name: 'AdminTools',
+  component: AdminTools
+  },
+        {
+          path: '/admin/dashboard',
+          name: 'AdminDashboard',
+          component: AdminDashboard
+        },
+  {
+    path: '/search',
+    name: 'EnhancedSearch',
+    component: EnhancedSearch
+  },
+  {
+    path: '/mobile-search',
+    name: 'MobileSearch',
+    component: MobileSearch
+  },
+  {
+    path: '/mobile-tool/:id',
+    name: 'MobileToolDetail',
+    component: MobileToolDetail
   },
   {
     path: '/debug',

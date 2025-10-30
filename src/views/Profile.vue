@@ -45,9 +45,14 @@
               <button v-if="!isAuthenticated" @click="goToLogin" class="login-btn">
                 登录
               </button>
-              <button v-else @click="logout" class="logout-btn">
-                退出登录
-              </button>
+              <div v-else class="action-buttons">
+                <button @click="editProfile = true" class="edit-btn">
+                  编辑资料
+                </button>
+                <button @click="logout" class="logout-btn">
+                  退出登录
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -269,6 +274,12 @@
         <button @click="saveSettings" class="save-btn">保存</button>
       </template>
     </Modal>
+
+    <!-- 编辑个人资料模态框 -->
+    <ProfileEditModal 
+      v-model:visible="editProfile" 
+      @saved="handleProfileSaved"
+    />
   </div>
 </template>
 
@@ -296,6 +307,7 @@ import { useToast } from '@/composables/useToast'
 import { categories } from '@/data/categories'
 import { aiTools } from '@/data/tools'
 import Modal from '@/components/Modal.vue'
+import ProfileEditModal from '@/components/ProfileEditModal.vue'
 
 const router = useRouter()
 const { user, isAuthenticated, logout } = useAuth()
@@ -305,7 +317,7 @@ const { userRatings, getRatingStats } = useRating()
 const { success, error } = useToast()
 
 const showSettings = ref(false)
-const editAvatar = ref(false)
+const editProfile = ref(false)
 const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
 
 const settings = ref({
@@ -315,10 +327,38 @@ const settings = ref({
 })
 
 // 计算属性
-const favoriteTools = computed(() => getFavoriteTools(aiTools))
-const recentTools = computed(() => getRecentTools(3))
-const visitStats = computed(() => getVisitStats())
-const ratingStats = computed(() => getRatingStats())
+const favoriteTools = computed(() => {
+  try {
+    return getFavoriteTools ? getFavoriteTools(aiTools) : []
+  } catch (error) {
+    console.error("Error getting favorite tools:", error)
+    return []
+  }
+})
+const recentTools = computed(() => {
+  try {
+    return getRecentTools ? getRecentTools(3) : []
+  } catch (error) {
+    console.error("Error getting recent tools:", error)
+    return []
+  }
+})
+const visitStats = computed(() => {
+  try {
+    return getVisitStats ? getVisitStats() : { totalViews: 0, uniqueTools: 0, recentActivity: [] }
+  } catch (error) {
+    console.error("Error getting visit stats:", error)
+    return { totalViews: 0, uniqueTools: 0, recentActivity: [] }
+  }
+})
+const ratingStats = computed(() => {
+  try {
+    return getRatingStats ? getRatingStats() : { totalRatings: 0, averageRating: 0, ratingDistribution: [] }
+  } catch (error) {
+    console.error("Error getting rating stats:", error)
+    return { totalRatings: 0, averageRating: 0, ratingDistribution: [] }
+  }
+})
 
 // 方法
 const goBack = () => {
@@ -387,6 +427,12 @@ const saveSettings = () => {
   localStorage.setItem('ai-tools-settings', JSON.stringify(settings.value))
   success('设置已保存')
   showSettings.value = false
+}
+
+const handleProfileSaved = () => {
+  // 个人资料保存后的回调
+  success('个人资料更新成功')
+  // 这里可以重新加载用户信息
 }
 
 // 加载设置
@@ -587,6 +633,28 @@ onMounted(() => {
 .profile-actions {
   display: flex;
   gap: 0.75rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.edit-btn {
+  padding: 0.5rem 1rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-btn:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
 }
 
 .login-btn,

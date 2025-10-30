@@ -10,6 +10,12 @@ class User {
     this.email = data.email;
     this.password_hash = data.password_hash;
     this.avatar = data.avatar;
+    this.bio = data.bio;
+    this.website = data.website;
+    this.location = data.location;
+    this.isPublic = data.isPublic !== undefined ? data.isPublic : true;
+    this.showEmail = data.showEmail !== undefined ? data.showEmail : false;
+    this.showStats = data.showStats !== undefined ? data.showStats : true;
     this.is_active = data.is_active;
     this.email_verified = data.email_verified;
     this.last_login_at = data.last_login_at;
@@ -100,7 +106,17 @@ class User {
   // 更新用户信息
   async update(updateData) {
     const connection = getConnection();
-    const allowedFields = ['username', 'email', 'avatar'];
+    const allowedFields = [
+      'username', 
+      'email', 
+      'avatar', 
+      'bio', 
+      'website', 
+      'location', 
+      'isPublic', 
+      'showEmail', 
+      'showStats'
+    ];
     const updates = [];
     const values = [];
 
@@ -155,6 +171,12 @@ class User {
       username: this.username,
       email: this.email,
       avatar: this.avatar,
+      bio: this.bio,
+      website: this.website,
+      location: this.location,
+      isPublic: this.isPublic,
+      showEmail: this.showEmail,
+      showStats: this.showStats,
       is_active: this.is_active,
       email_verified: this.email_verified,
       last_login_at: this.last_login_at,

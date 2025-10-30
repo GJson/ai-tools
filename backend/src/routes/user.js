@@ -30,15 +30,56 @@ router.put('/profile', authenticate, [
     .withMessage('用户名长度必须在2-20个字符之间')
     .matches(/^[a-zA-Z0-9_]+$/)
     .withMessage('用户名只能包含字母、数字和下划线'),
-  body('email')
+  body('bio')
     .optional()
-    .isEmail()
-    .withMessage('请输入有效的邮箱地址')
-    .normalizeEmail(),
+    .isLength({ max: 200 })
+    .withMessage('个人简介不能超过200个字符'),
+  body('website')
+    .optional()
+    .custom((value) => {
+      // 允许空字符串或有效的URL
+      if (!value || value.trim() === '') return true;
+      try {
+        new URL(value);
+        return true;
+      } catch {
+        return false;
+      }
+    })
+    .withMessage('个人网站必须是有效的URL'),
+  body('location')
+    .optional()
+    .isLength({ max: 50 })
+    .withMessage('所在地不能超过50个字符'),
   body('avatar')
     .optional()
-    .isURL()
-    .withMessage('头像必须是有效的URL')
+    .custom((value) => {
+      // 支持URL格式或base64格式的头像
+      if (typeof value !== 'string') return false;
+      
+      // 检查是否是有效的URL
+      try {
+        new URL(value);
+        return true;
+      } catch {
+        // 如果不是URL，检查是否是base64格式
+        const base64Regex = /^data:image\/(png|jpg|jpeg|gif|webp);base64,/;
+        return base64Regex.test(value);
+      }
+    })
+    .withMessage('头像必须是有效的URL或base64格式的图片'),
+  body('isPublic')
+    .optional()
+    .isBoolean()
+    .withMessage('公开设置必须是布尔值'),
+  body('showEmail')
+    .optional()
+    .isBoolean()
+    .withMessage('显示邮箱设置必须是布尔值'),
+  body('showStats')
+    .optional()
+    .isBoolean()
+    .withMessage('显示统计设置必须是布尔值')
 ], async (req, res) => {
   try {
     // 验证输入数据
@@ -53,7 +94,16 @@ router.put('/profile', authenticate, [
       });
     }
 
-    const { username, email, avatar } = req.body;
+    const { 
+      username, 
+      bio, 
+      website, 
+      location, 
+      avatar, 
+      isPublic, 
+      showEmail, 
+      showStats 
+    } = req.body;
     const updateData = {};
 
     // 检查用户名是否已存在（如果要更新用户名）
@@ -78,10 +128,14 @@ router.put('/profile', authenticate, [
       updateData.email = email;
     }
 
-    // 更新头像
-    if (avatar) {
-      updateData.avatar = avatar;
-    }
+    // 更新其他字段
+    if (bio !== undefined) updateData.bio = bio;
+    if (website !== undefined) updateData.website = website;
+    if (location !== undefined) updateData.location = location;
+    if (avatar !== undefined) updateData.avatar = avatar;
+    if (isPublic !== undefined) updateData.isPublic = isPublic;
+    if (showEmail !== undefined) updateData.showEmail = showEmail;
+    if (showStats !== undefined) updateData.showStats = showStats;
 
     // 如果没有要更新的数据
     if (Object.keys(updateData).length === 0) {

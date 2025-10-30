@@ -6,6 +6,14 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
+const toolRoutes = require('./routes/tools');
+const commentRoutes = require('./routes/comments');
+const searchRoutes = require('./routes/search');
+const ratingRoutes = require('./routes/ratings');
+const favoriteRoutes = require('./routes/favorites');
+const favoriteFolderRoutes = require('./routes/favorite-folders');
+const historyRoutes = require('./routes/history');
+const adminDashboardRoutes = require('./routes/admin-dashboard');
 const errorHandler = require('./middleware/errorHandler');
 const { connectDB } = require('./config/database');
 
@@ -62,6 +70,14 @@ app.get('/health', (req, res) => {
 // API路由
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/tools', toolRoutes);
+app.use('/api/comments', commentRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/ratings', ratingRoutes);
+app.use('/api/favorites', favoriteRoutes);
+app.use('/api/favorite-folders', favoriteFolderRoutes);
+app.use('/api/history', historyRoutes);
+app.use('/api/admin/dashboard', adminDashboardRoutes);
 
 // 404处理
 app.use('*', (req, res) => {
