@@ -774,7 +774,7 @@ onMounted(() => {
   gap: 0.5rem;
 }
 
-.action-btn {
+.header-actions .action-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -786,22 +786,23 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 0.875rem;
+  white-space: nowrap;
 }
 
-.action-btn:hover {
+.header-actions .action-btn:hover {
   background-color: var(--bg-tertiary);
   border-color: var(--border-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
 
-.action-btn.primary {
+.header-actions .action-btn.primary {
   background-color: var(--primary-color);
   color: white;
   border-color: var(--primary-color);
 }
 
-.action-btn.primary:hover {
+.header-actions .action-btn.primary:hover {
   background-color: var(--primary-hover);
   border-color: var(--primary-hover);
 }
@@ -952,7 +953,7 @@ onMounted(() => {
   gap: 0.5rem;
 }
 
-.action-btn {
+.folder-actions .action-btn {
   width: 28px;
   height: 28px;
   border: none;
@@ -964,14 +965,16 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
+  min-width: unset;
 }
 
-.action-btn:hover {
+.folder-actions .action-btn:hover {
   background-color: var(--border-color);
   color: var(--text-primary);
 }
 
-.action-btn.delete:hover {
+.folder-actions .action-btn.delete:hover {
   background-color: var(--error-color);
   color: white;
 }
@@ -1300,7 +1303,7 @@ onMounted(() => {
     justify-content: flex-start;
   }
   
-  .action-btn {
+  .header-actions .action-btn {
     flex: 1;
     justify-content: center;
   }

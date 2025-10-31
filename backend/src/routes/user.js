@@ -95,7 +95,8 @@ router.put('/profile', authenticate, [
     }
 
     const { 
-      username, 
+      username,
+      email,
       bio, 
       website, 
       location, 

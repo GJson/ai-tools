@@ -64,6 +64,14 @@ const loadUser = () => {
   }
 }
 
+// 更新用户信息（用于资料编辑后更新）
+const updateUser = (updatedData: Partial<User>) => {
+  if (user.value) {
+    user.value = { ...user.value, ...updatedData }
+    localStorage.setItem('ai-tools-user', JSON.stringify(user.value))
+  }
+}
+
 // 清除认证信息
 const clearAuth = () => {
   user.value = null
@@ -240,6 +248,7 @@ export const useAuth = () => {
     login,
     register,
     logout,
+    updateUser,
     apiRequest
   }
 }

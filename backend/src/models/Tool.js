@@ -137,13 +137,15 @@ class Tool {
     return rows.map(row => new Tool(row));
   }
 
-  // 搜索工具
+  // 搜索工具 (兼容MariaDB 5.5)
   static async searchTools(query, limit = 20, offset = 0) {
     const connection = getConnection();
     const searchTerm = `%${query}%`;
+    
+    // 先查询name和description匹配的结果
     const sql = `
       SELECT * FROM tools 
-      WHERE (name LIKE ? OR description LIKE ? OR JSON_SEARCH(tags, 'one', ?) IS NOT NULL) 
+      WHERE (name LIKE ? OR description LIKE ?) 
       AND status = 'approved' AND isActive = TRUE 
       ORDER BY 
         CASE 
@@ -152,12 +154,38 @@ class Tool {
           ELSE 3
         END,
         createdAt DESC
-      LIMIT ? OFFSET ?
     `;
     const [rows] = await connection.execute(sql, [
-      searchTerm, searchTerm, query, searchTerm, searchTerm, limit, offset
+      searchTerm, searchTerm, searchTerm, searchTerm
     ]);
-    return rows.map(row => new Tool(row));
+    
+    // 手动过滤tags字段
+    const filteredRows = rows.filter(row => {
+      // 如果name或description匹配，直接包含
+      if ((row.name && row.name.toLowerCase().includes(query.toLowerCase())) ||
+          (row.description && row.description.toLowerCase().includes(query.toLowerCase()))) {
+        return true;
+      }
+      
+      // 检查tags
+      if (row.tags) {
+        try {
+          const tags = typeof row.tags === 'string' ? JSON.parse(row.tags) : row.tags;
+          if (Array.isArray(tags)) {
+            return tags.some(tag => 
+              tag && tag.toLowerCase().includes(query.toLowerCase())
+            );
+          }
+        } catch (error) {
+          // 忽略JSON解析错误
+        }
+      }
+      return false;
+    });
+    
+    // 应用分页
+    const paginatedRows = filteredRows.slice(offset, offset + limit);
+    return paginatedRows.map(row => new Tool(row));
   }
 
   // 更新工具状态

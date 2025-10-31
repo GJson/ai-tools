@@ -299,21 +299,39 @@ async function searchTools(query, limit = 20, offset = 0, filters = {}) {
   return rows.map(row => new Tool(row));
 }
 
-// 搜索标签
+// 搜索标签 (兼容MariaDB 5.5)
 async function searchTags(query, limit = 10) {
   const connection = getConnection();
-  const searchTerm = `%${query}%`;
   
   const sql = `
-    SELECT DISTINCT JSON_UNQUOTE(JSON_EXTRACT(tags, '$[*]')) as tag
+    SELECT DISTINCT tags
     FROM tools 
     WHERE isActive = TRUE AND status = 'approved'
-    AND JSON_SEARCH(tags, 'one', ?) IS NOT NULL
+    AND tags IS NOT NULL
     LIMIT ?
   `;
   
-  const [rows] = await connection.execute(sql, [searchTerm, parseInt(limit)]);
-  return rows.map(row => row.tag).filter(tag => tag && tag.toLowerCase().includes(query.toLowerCase()));
+  const [rows] = await connection.execute(sql, [parseInt(limit) * 5]); // 获取更多行以便过滤
+  
+  // 手动解析JSON并提取匹配的标签
+  const matchedTags = new Set();
+  for (const row of rows) {
+    try {
+      const tags = typeof row.tags === 'string' ? JSON.parse(row.tags) : row.tags;
+      if (Array.isArray(tags)) {
+        tags.forEach(tag => {
+          if (tag && tag.toLowerCase().includes(query.toLowerCase())) {
+            matchedTags.add(tag);
+          }
+        });
+      }
+    } catch (error) {
+      // 忽略解析错误
+    }
+    if (matchedTags.size >= limit) break;
+  }
+  
+  return Array.from(matchedTags).slice(0, limit);
 }
 
 // 计算相关度分数

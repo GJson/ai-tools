@@ -310,7 +310,7 @@ import Modal from '@/components/Modal.vue'
 import ProfileEditModal from '@/components/ProfileEditModal.vue'
 
 const router = useRouter()
-const { user, isAuthenticated, logout } = useAuth()
+const { user, isAuthenticated, logout, updateUser } = useAuth()
 const { favorites, getFavoriteTools, removeFavorite } = useFavorites()
 const { getRecentTools, getVisitStats } = useHistory()
 const { userRatings, getRatingStats } = useRating()
@@ -429,10 +429,14 @@ const saveSettings = () => {
   showSettings.value = false
 }
 
-const handleProfileSaved = () => {
-  // 个人资料保存后的回调
-  success('个人资料更新成功')
-  // 这里可以重新加载用户信息
+const handleProfileSaved = (updatedUserData?: any) => {
+  // 个人资料保存后的回调，更新显示的用户信息
+  // 注意：不要重复显示成功提示，ProfileEditModal已经显示过了
+  if (updatedUserData && updateUser) {
+    // 使用useAuth提供的updateUser方法更新响应式的user对象
+    updateUser(updatedUserData)
+  }
+  // 头像和其他信息会自动更新，因为user是响应式的
 }
 
 // 加载设置

@@ -257,21 +257,34 @@ router.get('/stats', authenticate, async (req, res) => {
     
     const [toolsRows] = await connection.execute(toolsSql, [req.user.id, parseInt(period)]);
     
-    // 搜索关键词统计
+    // 搜索关键词统计 (兼容MariaDB 5.5)
     const searchSql = `
       SELECT 
-        JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.query')) as searchQuery,
+        metadata,
         COUNT(*) as searchCount
       FROM user_history 
       WHERE userId = ? AND isActive = TRUE 
       AND action = 'search' AND metadata IS NOT NULL
       AND createdAt >= DATE_SUB(NOW(), INTERVAL ? DAY)
-      GROUP BY JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.query'))
+      GROUP BY metadata
       ORDER BY searchCount DESC
       LIMIT 10
     `;
     
     const [searchRows] = await connection.execute(searchSql, [req.user.id, parseInt(period)]);
+    
+    // 手动解析JSON字符串提取query字段
+    const parsedSearchRows = searchRows.map(row => {
+      try {
+        const metadata = typeof row.metadata === 'string' ? JSON.parse(row.metadata) : row.metadata;
+        return {
+          searchQuery: metadata.query || '',
+          searchCount: row.searchCount
+        };
+      } catch (error) {
+        return null;
+      }
+    }).filter(row => row !== null && row.searchQuery);
     
     res.json({
       success: true,
@@ -288,7 +301,7 @@ router.get('/stats', authenticate, async (req, res) => {
         },
         dailyActivity: dailyRows,
         topTools: toolsRows,
-        topSearches: searchRows.filter(row => row.searchQuery)
+        topSearches: parsedSearchRows
       }
     });
 

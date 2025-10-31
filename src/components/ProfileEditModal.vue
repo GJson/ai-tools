@@ -339,7 +339,17 @@ const handleSave = async () => {
 
     if (response.success) {
       success('个人资料更新成功')
-      emit('saved')
+      // 更新localStorage中的用户信息
+      if (response.data && response.data.user) {
+        const currentUser = localStorage.getItem('ai-tools-user')
+        if (currentUser) {
+          const userData = JSON.parse(currentUser)
+          // 合并新的用户数据
+          const updatedUser = { ...userData, ...response.data.user }
+          localStorage.setItem('ai-tools-user', JSON.stringify(updatedUser))
+        }
+      }
+      emit('saved', response.data?.user)
       handleClose()
     } else {
       error(response.error || '更新失败')
