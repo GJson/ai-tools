@@ -16,6 +16,7 @@ class User {
     this.isPublic = data.isPublic !== undefined ? data.isPublic : true;
     this.showEmail = data.showEmail !== undefined ? data.showEmail : false;
     this.showStats = data.showStats !== undefined ? data.showStats : true;
+    this.channel = data.channel || 'gjson.com'; // 渠道来源，默认为官网
     this.is_active = data.is_active;
     this.email_verified = data.email_verified;
     this.last_login_at = data.last_login_at;
@@ -25,69 +26,91 @@ class User {
 
   // 创建用户
   static async create(userData) {
-    const connection = getConnection();
-    const { username, email, password } = userData;
-    
-    // 生成UUID
-    const uuid = uuidv4();
-    
-    // 加密密码
-    const saltRounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
-    const password_hash = await bcrypt.hash(password, saltRounds);
-    
-    // 生成默认头像
-    const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`;
-    
-    const sql = `
-      INSERT INTO users (uuid, username, email, password_hash, avatar)
-      VALUES (?, ?, ?, ?, ?)
-    `;
-    
-    const [result] = await connection.execute(sql, [
-      uuid, username, email, password_hash, avatar
-    ]);
-    
-    return await User.findById(result.insertId);
+    const connection = await getConnection();
+    try {
+      const { username, email, password, channel = 'gjson.com' } = userData;
+      
+      // 生成UUID
+      const uuid = uuidv4();
+      
+      // 加密密码
+      const saltRounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
+      const password_hash = await bcrypt.hash(password, saltRounds);
+      
+      // 生成默认头像
+      const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`;
+      
+      const sql = `
+        INSERT INTO users (uuid, username, email, password_hash, avatar, channel)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `;
+      
+      const [result] = await connection.execute(sql, [
+        uuid, username, email, password_hash, avatar, channel
+      ]);
+      
+      connection.release();
+      return await User.findById(result.insertId);
+    } catch (error) {
+      connection.release();
+      throw error;
+    }
   }
 
   // 根据ID查找用户
   static async findById(id) {
-    const connection = getConnection();
-    const sql = 'SELECT * FROM users WHERE id = ? AND is_active = TRUE';
-    const [rows] = await connection.execute(sql, [id]);
-    
-    if (rows.length === 0) return null;
-    return new User(rows[0]);
+    const connection = await getConnection();
+    try {
+      const sql = 'SELECT * FROM users WHERE id = ? AND is_active = TRUE';
+      const [rows] = await connection.execute(sql, [id]);
+      
+      if (rows.length === 0) return null;
+      return new User(rows[0]);
+    } finally {
+      connection.release();
+    }
   }
 
   // 根据UUID查找用户
   static async findByUuid(uuid) {
-    const connection = getConnection();
-    const sql = 'SELECT * FROM users WHERE uuid = ? AND is_active = TRUE';
-    const [rows] = await connection.execute(sql, [uuid]);
-    
-    if (rows.length === 0) return null;
-    return new User(rows[0]);
+    const connection = await getConnection();
+    try {
+      const sql = 'SELECT * FROM users WHERE uuid = ? AND is_active = TRUE';
+      const [rows] = await connection.execute(sql, [uuid]);
+      
+      if (rows.length === 0) return null;
+      return new User(rows[0]);
+    } finally {
+      connection.release();
+    }
   }
 
   // 根据邮箱查找用户
   static async findByEmail(email) {
-    const connection = getConnection();
-    const sql = 'SELECT * FROM users WHERE email = ? AND is_active = TRUE';
-    const [rows] = await connection.execute(sql, [email]);
-    
-    if (rows.length === 0) return null;
-    return new User(rows[0]);
+    const connection = await getConnection();
+    try {
+      const sql = 'SELECT * FROM users WHERE email = ? AND is_active = TRUE';
+      const [rows] = await connection.execute(sql, [email]);
+      
+      if (rows.length === 0) return null;
+      return new User(rows[0]);
+    } finally {
+      connection.release();
+    }
   }
 
   // 根据用户名查找用户
   static async findByUsername(username) {
-    const connection = getConnection();
-    const sql = 'SELECT * FROM users WHERE username = ? AND is_active = TRUE';
-    const [rows] = await connection.execute(sql, [username]);
-    
-    if (rows.length === 0) return null;
-    return new User(rows[0]);
+    const connection = await getConnection();
+    try {
+      const sql = 'SELECT * FROM users WHERE username = ? AND is_active = TRUE';
+      const [rows] = await connection.execute(sql, [username]);
+      
+      if (rows.length === 0) return null;
+      return new User(rows[0]);
+    } finally {
+      connection.release();
+    }
   }
 
   // 验证密码
@@ -97,15 +120,19 @@ class User {
 
   // 更新最后登录时间
   async updateLastLogin() {
-    const connection = getConnection();
-    const sql = 'UPDATE users SET last_login_at = NOW() WHERE id = ?';
-    await connection.execute(sql, [this.id]);
-    this.last_login_at = new Date();
+    const connection = await getConnection();
+    try {
+      const sql = 'UPDATE users SET last_login_at = NOW() WHERE id = ?';
+      await connection.execute(sql, [this.id]);
+      this.last_login_at = new Date();
+    } finally {
+      connection.release();
+    }
   }
 
   // 更新用户信息
   async update(updateData) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const allowedFields = [
       'username', 
       'email', 
@@ -143,7 +170,7 @@ class User {
 
   // 更新密码
   async updatePassword(newPassword) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const saltRounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
     const password_hash = await bcrypt.hash(newPassword, saltRounds);
     
@@ -156,7 +183,7 @@ class User {
 
   // 软删除用户
   async softDelete() {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = 'UPDATE users SET is_active = FALSE, updated_at = NOW() WHERE id = ?';
     await connection.execute(sql, [this.id]);
     this.is_active = false;
@@ -177,6 +204,7 @@ class User {
       isPublic: this.isPublic,
       showEmail: this.showEmail,
       showStats: this.showStats,
+      channel: this.channel,
       is_active: this.is_active,
       email_verified: this.email_verified,
       last_login_at: this.last_login_at,
@@ -187,7 +215,7 @@ class User {
 
   // 检查邮箱是否已存在
   static async isEmailExists(email) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = 'SELECT COUNT(*) as count FROM users WHERE email = ? AND is_active = TRUE';
     const [rows] = await connection.execute(sql, [email]);
     return rows[0].count > 0;
@@ -195,7 +223,7 @@ class User {
 
   // 检查用户名是否已存在
   static async isUsernameExists(username) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = 'SELECT COUNT(*) as count FROM users WHERE username = ? AND is_active = TRUE';
     const [rows] = await connection.execute(sql, [username]);
     return rows[0].count > 0;

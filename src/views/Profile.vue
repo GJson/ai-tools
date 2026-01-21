@@ -267,6 +267,20 @@
             <option value="en">English</option>
           </select>
         </div>
+        
+        <div class="setting-divider"></div>
+        
+        <div class="setting-item">
+          <div class="setting-info">
+            <h4 class="setting-title">技术选型手册</h4>
+            <p class="setting-description">查看技术选型与架构指南</p>
+          </div>
+          <router-link to="/profile/tech-guide" class="tech-guide-link" @click="showSettings = false">
+            <BookOpen class="link-icon" :size="16" />
+            查看手册
+            <ChevronRight class="chevron-icon" :size="16" />
+          </router-link>
+        </div>
       </div>
       
       <template #footer>
@@ -297,7 +311,8 @@ import {
   TrendingUp,
   ChevronRight,
   X,
-  Eye
+  Eye,
+  BookOpen
 } from 'lucide-vue-next'
 import { useAuth } from '@/composables/useAuth'
 import { useFavorites } from '@/composables/useFavorites'
@@ -988,6 +1003,34 @@ onMounted(() => {
 
 .setting-item:last-child {
   border-bottom: none;
+}
+
+.setting-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 1rem 0;
+}
+
+.tech-guide-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+
+.tech-guide-link:hover {
+  background-color: var(--primary-hover);
+}
+
+.link-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .setting-info {

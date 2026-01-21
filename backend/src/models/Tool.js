@@ -31,7 +31,7 @@ class Tool {
 
   // 创建工具
   static async create(toolData) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const { 
       name, 
       description, 
@@ -76,7 +76,7 @@ class Tool {
 
   // 根据ID查找工具
   static async findById(id) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = 'SELECT * FROM tools WHERE id = ? AND isActive = TRUE';
     const [rows] = await connection.execute(sql, [id]);
     
@@ -86,7 +86,7 @@ class Tool {
 
   // 根据UUID查找工具
   static async findByUuid(uuid) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = 'SELECT * FROM tools WHERE uuid = ? AND isActive = TRUE';
     const [rows] = await connection.execute(sql, [uuid]);
     
@@ -96,7 +96,7 @@ class Tool {
 
   // 获取待审核工具
   static async getPendingTools(limit = 20, offset = 0) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = `
       SELECT t.*, u.username as submittedByUsername 
       FROM tools t 
@@ -111,7 +111,7 @@ class Tool {
 
   // 获取已审核工具
   static async getApprovedTools(limit = 20, offset = 0) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = `
       SELECT t.*, u.username as submittedByUsername 
       FROM tools t 
@@ -126,7 +126,7 @@ class Tool {
 
   // 根据分类获取工具
   static async getToolsByCategory(categoryId, limit = 20, offset = 0) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = `
       SELECT * FROM tools 
       WHERE category = ? AND status = 'approved' AND isActive = TRUE 
@@ -139,7 +139,7 @@ class Tool {
 
   // 搜索工具 (兼容MariaDB 5.5)
   static async searchTools(query, limit = 20, offset = 0) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const searchTerm = `%${query}%`;
     
     // 先查询name和description匹配的结果
@@ -190,7 +190,7 @@ class Tool {
 
   // 更新工具状态
   async updateStatus(status, approvedBy = null, rejectedReason = null) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const updateData = { status };
     
     if (status === 'approved' && approvedBy) {
@@ -222,7 +222,7 @@ class Tool {
 
   // 更新工具信息
   async update(updateData) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const allowedFields = [
       'name', 'description', 'category', 'tags', 'website', 'pricing',
       'features', 'screenshots', 'contactEmail', 'notes'
@@ -258,7 +258,7 @@ class Tool {
 
   // 增加浏览次数
   async incrementViewCount() {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = 'UPDATE tools SET viewCount = viewCount + 1 WHERE id = ?';
     await connection.execute(sql, [this.id]);
     this.viewCount += 1;
@@ -266,7 +266,7 @@ class Tool {
 
   // 软删除工具
   async softDelete() {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = 'UPDATE tools SET isActive = FALSE, updatedAt = NOW() WHERE id = ?';
     await connection.execute(sql, [this.id]);
     this.isActive = false;
@@ -326,7 +326,7 @@ class Tool {
 
   // 检查工具名称是否已存在
   static async isNameExists(name, excludeId = null) {
-    const connection = getConnection();
+    const connection = await getConnection();
     let sql = 'SELECT COUNT(*) as count FROM tools WHERE name = ? AND isActive = TRUE';
     const params = [name];
     
@@ -341,7 +341,7 @@ class Tool {
 
   // 获取工具统计信息
   static async getStats() {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = `
       SELECT 
         COUNT(*) as totalTools,

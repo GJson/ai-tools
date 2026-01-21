@@ -16,7 +16,7 @@ router.get('/', authenticate, async (req, res) => {
       order = 'DESC'
     } = req.query;
     
-    const connection = getConnection();
+    const connection = await getConnection();
     
     let sql = `
       SELECT f.*, t.name, t.description, t.category, t.website, t.pricing, 
@@ -109,7 +109,7 @@ router.post('/', authenticate, [
     }
 
     const { toolId, folderId } = req.body;
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 检查工具是否存在
     const toolSql = 'SELECT id, name FROM tools WHERE id = ? AND isActive = TRUE AND status = "approved"';
@@ -184,7 +184,7 @@ router.post('/', authenticate, [
 router.delete('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 检查收藏是否存在且属于当前用户
     const checkSql = 'SELECT toolId FROM favorites WHERE id = ? AND userId = ? AND isActive = TRUE';
@@ -222,7 +222,7 @@ router.delete('/:id', authenticate, async (req, res) => {
 router.get('/check/:toolId', authenticate, async (req, res) => {
   try {
     const { toolId } = req.params;
-    const connection = getConnection();
+    const connection = await getConnection();
     
     const sql = 'SELECT id, folderId, createdAt FROM favorites WHERE toolId = ? AND userId = ? AND isActive = TRUE';
     const [rows] = await connection.execute(sql, [toolId, req.user.id]);
@@ -259,7 +259,7 @@ router.post('/batch', authenticate, [
 ], async (req, res) => {
   try {
     const { action, toolIds, folderId } = req.body;
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 验证输入数据
     const errors = validationResult(req);
@@ -331,7 +331,7 @@ router.post('/batch', authenticate, [
 // 获取收藏统计
 router.get('/stats', authenticate, async (req, res) => {
   try {
-    const connection = getConnection();
+    const connection = await getConnection();
     
     const sql = `
       SELECT 
@@ -380,7 +380,7 @@ router.get('/stats', authenticate, async (req, res) => {
 // 更新工具的收藏数
 async function updateToolFavoriteCount(toolId) {
   try {
-    const connection = getConnection();
+    const connection = await getConnection();
     
     const countSql = `
       SELECT COUNT(*) as favoriteCount

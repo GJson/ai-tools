@@ -227,7 +227,8 @@ router.get('/admin/pending', authenticate, requireAdmin, async (req, res) => {
         tools = await Tool.getApprovedTools(parseInt(limit), parseInt(offset));
       } else {
         // 其他状态，需要自定义查询
-        const connection = require('../config/database').getConnection();
+        const { getConnection } = require('../config/database');
+        const connection = await getConnection();
         const sql = `
           SELECT t.*, u.username as submittedByUsername 
           FROM tools t 
@@ -242,7 +243,8 @@ router.get('/admin/pending', authenticate, requireAdmin, async (req, res) => {
       total = tools.length;
     } else {
       // 获取所有工具
-      const connection = require('../config/database').getConnection();
+      const { getConnection } = require('../config/database');
+      const connection = await getConnection();
       const sql = `
         SELECT t.*, u.username as submittedByUsername 
         FROM tools t 

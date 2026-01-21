@@ -93,9 +93,7 @@ jspm_packages/
 
 # Deployment files
 *.tar.gz
-deploy.sh
 fix-*.sh
-check-*.sh
 server-*.sh
 rsync-*.sh
 complete-*.sh
@@ -103,6 +101,7 @@ manual-*.md
 upload-*.md
 quick-deploy.sh
 backend/env.example
+# 注意: deploy.sh 和 check-*.sh 需要保留，不在gitignore中
 
 
 # Security & Sensitive Information
@@ -169,3 +168,7 @@ upload-*.md
 quick-deploy.sh
 start.sh
 backend/.env.production
+
+# Deployment configuration (sensitive)
+deploy/config.prod.sh
+deploy_package/

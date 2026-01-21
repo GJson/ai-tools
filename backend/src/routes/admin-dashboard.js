@@ -8,7 +8,7 @@ const router = express.Router();
 // 获取仪表板概览数据
 router.get('/overview', authenticate, requireAdmin, async (req, res) => {
   try {
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 获取基础统计数据
     const statsSql = `
@@ -133,7 +133,7 @@ router.get('/overview', authenticate, requireAdmin, async (req, res) => {
 router.get('/users', authenticate, requireAdmin, async (req, res) => {
   try {
     const { offset = 0, limit = 20, search = '', sortBy = 'created_at', order = 'DESC' } = req.query;
-    const connection = getConnection();
+    const connection = await getConnection();
     
     let sql = `
       SELECT 
@@ -212,7 +212,7 @@ router.get('/users', authenticate, requireAdmin, async (req, res) => {
 router.get('/tools', authenticate, requireAdmin, async (req, res) => {
   try {
     const { offset = 0, limit = 20, status = '', category = '', search = '' } = req.query;
-    const connection = getConnection();
+    const connection = await getConnection();
     
     let sql = `
       SELECT 
@@ -296,7 +296,7 @@ router.get('/tools', authenticate, requireAdmin, async (req, res) => {
 router.get('/comments', authenticate, requireAdmin, async (req, res) => {
   try {
     const { offset = 0, limit = 20, status = 'all', search = '' } = req.query;
-    const connection = getConnection();
+    const connection = await getConnection();
     
     let sql = `
       SELECT 
@@ -369,7 +369,7 @@ router.get('/comments', authenticate, requireAdmin, async (req, res) => {
 router.get('/activity', authenticate, requireAdmin, async (req, res) => {
   try {
     const { offset = 0, limit = 50, action = '', startDate = '', endDate = '' } = req.query;
-    const connection = getConnection();
+    const connection = await getConnection();
     
     let sql = `
       SELECT 
@@ -451,7 +451,7 @@ router.get('/activity', authenticate, requireAdmin, async (req, res) => {
 // 获取系统性能指标
 router.get('/performance', authenticate, requireAdmin, async (req, res) => {
   try {
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 获取数据库性能指标
     const performanceSql = `
@@ -531,7 +531,7 @@ router.get('/performance', authenticate, requireAdmin, async (req, res) => {
 router.post('/batch', authenticate, requireAdmin, async (req, res) => {
   try {
     const { action, type, ids } = req.body;
-    const connection = getConnection();
+    const connection = await getConnection();
     
     if (!action || !type || !ids || !Array.isArray(ids) || ids.length === 0) {
       return res.status(400).json({

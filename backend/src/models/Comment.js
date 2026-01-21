@@ -27,7 +27,7 @@ class Comment {
 
   // 创建评论
   static async create(commentData) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const { 
       toolId, 
       userId, 
@@ -61,7 +61,7 @@ class Comment {
 
   // 根据ID查找评论
   static async findById(id) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = `
       SELECT c.*, u.username, u.avatar as userAvatar 
       FROM comments c 
@@ -76,7 +76,7 @@ class Comment {
 
   // 根据UUID查找评论
   static async findByUuid(uuid) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = `
       SELECT c.*, u.username, u.avatar as userAvatar 
       FROM comments c 
@@ -91,7 +91,7 @@ class Comment {
 
   // 获取工具的所有评论（分页）
   static async getByToolId(toolId, limit = 20, offset = 0, includeReplies = true) {
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 获取主评论
     const sql = `
@@ -118,7 +118,7 @@ class Comment {
 
   // 获取评论的回复
   static async getReplies(parentId) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = `
       SELECT c.*, u.username, u.avatar as userAvatar 
       FROM comments c 
@@ -133,7 +133,7 @@ class Comment {
 
   // 获取用户的评论
   static async getByUserId(userId, limit = 20, offset = 0) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = `
       SELECT c.*, u.username, u.avatar as userAvatar, t.name as toolName
       FROM comments c 
@@ -150,7 +150,7 @@ class Comment {
 
   // 获取待审核评论（管理员）
   static async getPendingComments(limit = 20, offset = 0) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = `
       SELECT c.*, u.username, u.avatar as userAvatar, t.name as toolName
       FROM comments c 
@@ -167,7 +167,7 @@ class Comment {
 
   // 搜索评论
   static async searchComments(query, limit = 20, offset = 0) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const searchTerm = `%${query}%`;
     const sql = `
       SELECT c.*, u.username, u.avatar as userAvatar, t.name as toolName
@@ -185,7 +185,7 @@ class Comment {
 
   // 更新评论
   async update(updateData) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const allowedFields = ['content', 'rating', 'isAnonymous'];
     const updates = [];
     const values = [];
@@ -213,7 +213,7 @@ class Comment {
 
   // 点赞/踩
   async toggleLike(userId, action) {
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 检查用户是否已经点赞/踩过
     const checkSql = 'SELECT * FROM comment_likes WHERE commentId = ? AND userId = ?';
@@ -252,7 +252,7 @@ class Comment {
 
   // 举报评论
   async report(userId, reason) {
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 检查用户是否已经举报过
     const checkSql = 'SELECT * FROM comment_reports WHERE commentId = ? AND userId = ?';
@@ -274,7 +274,7 @@ class Comment {
 
   // 审核评论（管理员）
   async moderate(approved, reason = null) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = 'UPDATE comments SET isApproved = ?, updatedAt = NOW() WHERE id = ?';
     await connection.execute(sql, [approved, this.id]);
     
@@ -284,7 +284,7 @@ class Comment {
 
   // 软删除评论
   async softDelete() {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = 'UPDATE comments SET isActive = FALSE, updatedAt = NOW() WHERE id = ?';
     await connection.execute(sql, [this.id]);
     this.isActive = false;
@@ -335,7 +335,7 @@ class Comment {
 
   // 检查用户是否已评论过该工具
   static async hasUserCommented(toolId, userId) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = 'SELECT COUNT(*) as count FROM comments WHERE toolId = ? AND userId = ? AND isActive = TRUE';
     const [rows] = await connection.execute(sql, [toolId, userId]);
     return rows[0].count > 0;
@@ -343,7 +343,7 @@ class Comment {
 
   // 获取工具的平均评分
   static async getAverageRating(toolId) {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = `
       SELECT 
         AVG(rating) as averageRating,
@@ -361,7 +361,7 @@ class Comment {
 
   // 获取评论统计信息
   static async getStats() {
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = `
       SELECT 
         COUNT(*) as totalComments,

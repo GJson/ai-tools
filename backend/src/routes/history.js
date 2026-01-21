@@ -38,7 +38,7 @@ router.post('/track', authenticate, [
     }
 
     const { action, targetType, targetId, targetName, metadata } = req.body;
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 检查是否已存在相同的记录（避免重复记录）
     const checkSql = `
@@ -111,7 +111,7 @@ router.get('/', authenticate, async (req, res) => {
       endDate = ''
     } = req.query;
     
-    const connection = getConnection();
+    const connection = await getConnection();
     
     let sql = `
       SELECT h.*, t.name as toolName, t.description as toolDescription, t.category as toolCategory
@@ -202,7 +202,7 @@ router.get('/', authenticate, async (req, res) => {
 router.get('/stats', authenticate, async (req, res) => {
   try {
     const { period = '30' } = req.query; // 默认30天
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 基础统计
     const statsSql = `
@@ -331,7 +331,7 @@ router.delete('/', authenticate, [
 ], async (req, res) => {
   try {
     const { action, targetType, beforeDate } = req.body;
-    const connection = getConnection();
+    const connection = await getConnection();
     
     let deleteSql = 'UPDATE user_history SET isActive = FALSE WHERE userId = ?';
     const params = [req.user.id];
@@ -371,7 +371,7 @@ router.delete('/', authenticate, [
 router.get('/export', authenticate, async (req, res) => {
   try {
     const { format = 'json', startDate = '', endDate = '' } = req.query;
-    const connection = getConnection();
+    const connection = await getConnection();
     
     let sql = `
       SELECT h.*, t.name as toolName, t.description as toolDescription, t.category as toolCategory

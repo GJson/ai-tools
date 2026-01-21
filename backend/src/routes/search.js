@@ -234,7 +234,7 @@ router.get('/', async (req, res) => {
 
 // 搜索工具
 async function searchTools(query, limit = 20, offset = 0, filters = {}) {
-  const connection = getConnection();
+  const connection = await getConnection();
   const searchTerm = `%${query}%`;
   
   let sql = `
@@ -301,7 +301,7 @@ async function searchTools(query, limit = 20, offset = 0, filters = {}) {
 
 // 搜索标签 (兼容MariaDB 5.5)
 async function searchTags(query, limit = 10) {
-  const connection = getConnection();
+  const connection = await getConnection();
   
   const sql = `
     SELECT DISTINCT tags
@@ -377,7 +377,7 @@ function getCategoryName(categoryId) {
 // 搜索统计
 router.get('/stats', async (req, res) => {
   try {
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 获取搜索统计
     const statsSql = `
@@ -425,7 +425,7 @@ router.post('/log', async (req, res) => {
   try {
     const { query, resultsCount, filters } = req.body;
     
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = `
       INSERT INTO search_logs (query, results_count, filters, created_at)
       VALUES (?, ?, ?, NOW())

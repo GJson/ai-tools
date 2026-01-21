@@ -8,7 +8,7 @@ const router = express.Router();
 // 获取用户的收藏夹列表
 router.get('/', authenticate, async (req, res) => {
   try {
-    const connection = getConnection();
+    const connection = await getConnection();
     
     const sql = `
       SELECT ff.*, COUNT(f.id) as favoritesCount
@@ -65,7 +65,7 @@ router.post('/', authenticate, [
     }
 
     const { name, description, color } = req.body;
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 检查收藏夹名称是否重复
     const checkSql = 'SELECT id FROM favorite_folders WHERE name = ? AND userId = ? AND isActive = TRUE';
@@ -137,7 +137,7 @@ router.put('/:id', authenticate, [
       });
     }
     
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 检查收藏夹是否存在且属于当前用户
     const checkSql = 'SELECT id FROM favorite_folders WHERE id = ? AND userId = ? AND isActive = TRUE';
@@ -210,7 +210,7 @@ router.put('/:id', authenticate, [
 router.delete('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 检查收藏夹是否存在且属于当前用户
     const checkSql = 'SELECT id FROM favorite_folders WHERE id = ? AND userId = ? AND isActive = TRUE';
@@ -258,7 +258,7 @@ router.get('/:id', authenticate, async (req, res) => {
     const { id } = req.params;
     const { offset = 0, limit = 20 } = req.query;
     
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 获取收藏夹信息
     const folderSql = 'SELECT * FROM favorite_folders WHERE id = ? AND userId = ? AND isActive = TRUE';
@@ -344,7 +344,7 @@ router.post('/:id/move', authenticate, [
       });
     }
     
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 检查源收藏夹是否存在
     const sourceFolderSql = 'SELECT id FROM favorite_folders WHERE id = ? AND userId = ? AND isActive = TRUE';

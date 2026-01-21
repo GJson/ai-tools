@@ -59,7 +59,7 @@
               <input v-model="form.remember" type="checkbox" class="checkbox" />
               <span class="checkbox-text">记住我</span>
             </label>
-            <a href="#" class="forgot-link">忘记密码？</a>
+            <a href="/forgot-password" class="forgot-link" @click.prevent="goToForgotPassword">忘记密码？</a>
           </div>
 
           <button
@@ -127,6 +127,10 @@ const errors = reactive({
 })
 
 const showPassword = ref(false)
+
+const goToForgotPassword = () => {
+  router.push('/forgot-password')
+}
 
 const validateForm = () => {
   errors.email = ''
@@ -305,6 +309,8 @@ const handleLogin = async () => {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
 }
 
 .checkbox-label {
@@ -330,9 +336,19 @@ const handleLogin = async () => {
   color: var(--primary-color);
   text-decoration: none;
   transition: color 0.2s ease;
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
 }
 
 .forgot-link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+.forgot-link:active {
   color: var(--primary-hover);
 }
 

@@ -90,18 +90,21 @@ ai-tools/
 ## 🌐 部署
 
 详细部署说明请查看：
-- **[部署指南](./DEPLOY_GUIDE.md)** - 完整的部署步骤和说明
-- **后端部署脚本**: `./deploy-server.sh`
-- **MySQL检查工具**: `./check-mysql.sh`
+- **[完整部署指南](./DEPLOYMENT_GUIDE.md)** - 完整的部署步骤和说明
+- **[部署系统文档](./deploy/README.md)** - 新部署系统使用指南
+- **统一部署工具**: `./deploy.sh`（推荐）
+- **旧部署脚本**: `./deploy-server.sh.backup`（备份）
 
 ### 快速部署
 
 ```bash
-# 后端部署
-./deploy-server.sh
+# 使用新部署系统（推荐）
+cd deploy && ./setup-deploy.sh  # 首次配置
+cd .. && ./deploy.sh            # 运行部署工具
 
-# 前端构建
-npm run build
+# 或使用旧脚本
+./deploy-server.sh.backup       # 后端部署
+npm run build                    # 前端构建
 ```
 
 ## 📋 主要功能
@@ -140,28 +143,76 @@ VITE_NODE_ENV=production
 
 ### 后端环境变量 (backend/.env)
 
-```env
-NODE_ENV=production
-PORT=3001
-HOST=0.0.0.0
+`.env` 文件是后端服务的核心配置文件，包含数据库、服务器、JWT、邮件等所有配置。
 
-# 数据库配置
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=ai_tools_user
-DB_PASSWORD=your_password
-DB_NAME=ai_tools
-
-# JWT配置
-JWT_SECRET=your-secret-key
-JWT_EXPIRE=7d
-
-# SMTP配置（可选）
-SMTP_HOST=smtp.example.com
-SMTP_PORT=465
-SMTP_USER=your-email@example.com
-SMTP_PASS=your-password
+**创建配置文件：**
+```bash
+cd backend
+cp env.example .env
+# 编辑 .env 文件，填入实际配置
 ```
+
+**完整配置项说明：**
+
+```env
+# ============================================
+# 服务器配置
+# ============================================
+NODE_ENV=production          # 运行环境: development | production
+PORT=3001                    # 服务端口
+HOST=0.0.0.0                 # 监听地址（0.0.0.0 表示监听所有网络接口）
+
+# ============================================
+# 数据库配置
+# ============================================
+DB_HOST=localhost            # MySQL主机地址
+DB_PORT=3306                 # MySQL端口
+DB_NAME=ai_tools             # 数据库名称
+DB_USER=ai_tools_user        # 数据库用户名
+DB_PASSWORD=your_password   # 数据库密码（⚠️ 重要：使用强密码）
+
+# ============================================
+# JWT配置（认证令牌）
+# ============================================
+JWT_SECRET=your-secret-key   # JWT密钥（⚠️ 重要：生产环境必须修改，建议使用 openssl rand -base64 32 生成）
+JWT_EXPIRES_IN=7d            # Access Token 过期时间
+JWT_REFRESH_EXPIRES_IN=30d   # Refresh Token 过期时间
+
+# ============================================
+# 邮件配置（用于发送验证码等）
+# ============================================
+SMTP_HOST=mail.gjson.com     # SMTP服务器地址
+SMTP_PORT=587                # SMTP端口（587-TLS, 465-SSL）
+SMTP_USER=noreply@gjson.com  # SMTP用户名（发件邮箱）
+SMTP_PASS=your_password      # SMTP密码（⚠️ 重要：邮箱密码或授权码）
+
+# ============================================
+# 文件上传配置
+# ============================================
+UPLOAD_PATH=./uploads        # 文件上传目录
+MAX_FILE_SIZE=5242880        # 最大文件大小（字节，默认5MB）
+
+# ============================================
+# 安全配置
+# ============================================
+BCRYPT_ROUNDS=12             # 密码加密轮数（越高越安全但越慢，建议10-12）
+RATE_LIMIT_WINDOW_MS=900000  # 限流时间窗口（毫秒，默认15分钟）
+RATE_LIMIT_MAX_REQUESTS=100  # 限流最大请求数（每个IP在时间窗口内的最大请求数）
+
+# ============================================
+# 前端URL（用于CORS和邮件链接）
+# ============================================
+FRONTEND_URL=https://gjson.com  # 前端访问地址（用于CORS配置和邮件中的链接）
+```
+
+**⚠️ 重要提示：**
+- `.env` 文件包含敏感信息，**不要提交到Git**（已在 `.gitignore` 中配置）
+- 生产环境必须修改 `JWT_SECRET` 和数据库密码
+- 使用 `env.example` 作为配置模板
+- 配置修改后需要重启服务才能生效
+
+**详细配置说明：**
+- 查看 [环境变量配置文档](./backend/ENV_CONFIG.md) 了解每个配置项的详细说明和使用方法
 
 ## 📊 API接口
 
@@ -209,9 +260,9 @@ SMTP_PASS=your-password
 ## 🚨 故障排除
 
 遇到问题？查看：
-1. [部署指南](./DEPLOY_GUIDE.md) - 完整的故障排除指南
-2. 检查服务日志: `ssh user@ip 'pm2 logs ai-tools-backend'`
-3. 检查MySQL: `ssh user@ip '~/check-mysql.sh'`
+1. [完整部署指南](./DEPLOYMENT_GUIDE.md) - 完整的故障排除指南
+2. [部署系统文档](./deploy/README.md) - 部署系统故障排查
+3. 检查服务日志: `ssh user@ip 'pm2 logs ai-tools-backend'`
 4. API健康检查: `curl https://gjson.com/api/health`
 
 ## 🤝 贡献
@@ -230,6 +281,7 @@ MIT License
 ---
 
 **注意**: 
-- 首次部署前请先阅读 [DEPLOY_GUIDE.md](./DEPLOY_GUIDE.md)
+- 首次部署前请先阅读 [完整部署指南](./DEPLOYMENT_GUIDE.md)
+- 推荐使用新部署系统：`./deploy.sh`
 - 确保已配置好MySQL数据库
 - 生产环境请修改默认的JWT_SECRET

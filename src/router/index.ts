@@ -6,6 +6,7 @@ import ToolDetail from '@/views/ToolDetail.vue'
 import Search from '@/views/Search.vue'
 import Login from '@/views/Login.vue'
 import Register from '@/views/Register.vue'
+import ForgotPassword from '@/views/ForgotPassword.vue'
 import Profile from '@/views/Profile.vue'
 import Favorites from '@/views/Favorites.vue'
 import History from '@/views/History.vue'
@@ -19,6 +20,8 @@ import EnhancedSearch from '@/views/EnhancedSearch.vue'
 import MobileSearch from '@/views/MobileSearch.vue'
 import MobileToolDetail from '@/views/MobileToolDetail.vue'
 import Debug from '@/views/Debug.vue'
+import TechGuide from '@/views/TechGuide.vue'
+import Calendar from '@/views/Calendar.vue'
 
 const routes = [
   {
@@ -52,6 +55,11 @@ const routes = [
     path: '/register',
     name: 'Register',
     component: Register
+  },
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: ForgotPassword
   },
   {
     path: '/profile',
@@ -118,6 +126,16 @@ const routes = [
     path: '/debug',
     name: 'Debug',
     component: Debug
+  },
+  {
+    path: '/profile/tech-guide',
+    name: 'TechGuide',
+    component: TechGuide
+  },
+  {
+    path: '/calendar',
+    name: 'Calendar',
+    component: Calendar
   }
 ]
 

@@ -12,7 +12,7 @@ router.get('/tool/:toolId', async (req, res) => {
     const { offset = 0, limit = 10 } = req.query;
     const userId = req.user?.id; // 可选，用于获取用户自己的评分
     
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 获取平均评分和总评分数
     const statsSql = `
@@ -123,7 +123,7 @@ router.post('/', authenticate, [
     }
 
     const { toolId, rating, comment } = req.body;
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 检查用户是否已经评分过
     const checkSql = 'SELECT id FROM ratings WHERE toolId = ? AND userId = ? AND isActive = TRUE';
@@ -204,7 +204,7 @@ router.put('/:id', authenticate, [
       });
     }
     
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 检查评分是否存在且属于当前用户
     const checkSql = 'SELECT * FROM ratings WHERE id = ? AND userId = ? AND isActive = TRUE';
@@ -247,7 +247,7 @@ router.put('/:id', authenticate, [
 router.delete('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 检查评分是否存在且属于当前用户
     const checkSql = 'SELECT * FROM ratings WHERE id = ? AND userId = ? AND isActive = TRUE';
@@ -287,7 +287,7 @@ router.get('/user/:userId', async (req, res) => {
     const { userId } = req.params;
     const { offset = 0, limit = 20 } = req.query;
     
-    const connection = getConnection();
+    const connection = await getConnection();
     const sql = `
       SELECT r.*, t.name as toolName, t.description as toolDescription
       FROM ratings r
@@ -322,7 +322,7 @@ router.get('/user/:userId', async (req, res) => {
 // 获取评分统计
 router.get('/stats', async (req, res) => {
   try {
-    const connection = getConnection();
+    const connection = await getConnection();
     
     const sql = `
       SELECT 
@@ -367,7 +367,7 @@ router.get('/stats', async (req, res) => {
 // 更新工具的平均评分
 async function updateToolRating(toolId) {
   try {
-    const connection = getConnection();
+    const connection = await getConnection();
     
     // 计算新的平均评分
     const avgSql = `

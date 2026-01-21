@@ -4,10 +4,14 @@
 
 ### 📚 文档文件
 - **README.md** - 项目主文档（项目介绍、快速开始、功能说明）
-- **DEPLOY_GUIDE.md** - 部署指南（完整的部署步骤、故障排除、验证清单）
+- **DEPLOYMENT_GUIDE.md** - 完整部署指南（包含所有部署相关内容）
 
 ### 🚀 部署脚本
-- **deploy-server.sh** - 后端自动化部署脚本（主部署工具）
+- **deploy.sh** - 统一部署工具（菜单式，推荐使用）
+- **deploy-server.sh.backup** - 旧后端部署脚本（已备份）
+- **deploy/** - 新部署系统目录
+  - `setup-deploy.sh` - 配置向导
+  - `one-click-deploy.sh` - 一键部署脚本
 
 ### 🔧 启动脚本
 - **start-backend.sh** - 本地开发环境后端启动脚本
@@ -101,9 +105,10 @@ public/
 
 以下文件已被删除，内容已合并到主文档中：
 
-- ❌ **DEPLOYMENT.md** - 内容已合并到 DEPLOY_GUIDE.md
-- ❌ **DEPLOYMENT_SUMMARY.md** - 内容已合并到 DEPLOY_GUIDE.md
-- ❌ **BACKEND_DEPLOYMENT.md** - 内容已合并到 DEPLOY_GUIDE.md
+- ❌ **DEPLOYMENT.md** - 内容已合并到 DEPLOYMENT_GUIDE.md
+- ❌ **DEPLOYMENT_SUMMARY.md** - 内容已合并到 DEPLOYMENT_GUIDE.md
+- ❌ **BACKEND_DEPLOYMENT.md** - 内容已合并到 DEPLOYMENT_GUIDE.md
+- ❌ **DEPLOY_GUIDE.md** - 内容已合并到 DEPLOYMENT_GUIDE.md
 - ❌ **PROJECT_SUMMARY.md** - 内容已合并到 README.md
 - ❌ **check-mysql.sh** - MySQL检查功能已集成到部署脚本中
 
@@ -130,17 +135,17 @@ npm run dev
 
 **查看部署指南：**
 ```bash
-cat DEPLOY_GUIDE.md
+cat DEPLOYMENT_GUIDE.md
 ```
 
 **执行部署：**
 ```bash
-# 后端部署
-./deploy-server.sh
+# 使用新部署系统（推荐）
+cd deploy && ./setup-deploy.sh  # 首次配置
+cd .. && ./deploy.sh            # 运行部署工具
 
-# 如果遇到MySQL问题，上传检查工具到服务器
-scp check-mysql.sh user@ip:~/
-ssh user@ip '~/check-mysql.sh'
+# 或使用旧脚本（备份）
+./deploy-server.sh.backup
 ```
 
 **服务器上启动/重启：**
@@ -166,8 +171,10 @@ pm2 restart ai-tools-backend
 ├── README.md              # 📖 主文档 - 项目介绍和快速开始
 │   └── 包含: 项目特性、技术栈、快速开始、项目结构、主要功能
 │
-├── DEPLOY_GUIDE.md        # 🚀 部署文档 - 完整部署指南
+├── DEPLOYMENT_GUIDE.md     # 🚀 部署文档 - 完整部署指南
 │   └── 包含: 部署步骤、MySQL管理、故障排除、验证清单
+├── deploy/                 # 🚀 部署系统目录
+│   └── README.md          # 部署系统使用文档
 │
 └── FILE_STRUCTURE.md      # 📁 本文档 - 文件结构说明
     └── 包含: 目录结构、文件说明、使用指南
@@ -177,11 +184,11 @@ pm2 restart ai-tools-backend
 
 **想要...**
 - 了解项目？ → 查看 `README.md`
-- 部署项目？ → 查看 `DEPLOY_GUIDE.md`
+- 部署项目？ → 查看 `DEPLOYMENT_GUIDE.md` 或使用 `./deploy.sh`
 - 了解文件结构？ → 查看 `FILE_STRUCTURE.md`（本文档）
 - 本地开发前端？ → 运行 `npm run dev`
 - 本地开发后端？ → 运行 `./start-backend.sh`
-- 部署到服务器？ → 运行 `./deploy-server.sh`
+- 部署到服务器？ → 运行 `./deploy.sh`（推荐）或 `./deploy-server.sh.backup`
 
 ## 📊 项目统计
 
@@ -191,8 +198,9 @@ pm2 restart ai-tools-backend
 - **配置文件**: 8个
 
 ### 文档文件
-- **主文档**: 3个（README、DEPLOY_GUIDE、FILE_STRUCTURE）
-- **脚本文件**: 4个（2个部署脚本 + 2个启动脚本）
+- **主文档**: 3个（README、DEPLOYMENT_GUIDE、FILE_STRUCTURE）
+- **部署系统文档**: 1个（deploy/README.md）
+- **脚本文件**: 8个（部署脚本 + 启动脚本 + 测试脚本）
 
 ### 依赖包
 - **前端依赖**: ~10个核心依赖
@@ -208,6 +216,6 @@ pm2 restart ai-tools-backend
 
 ---
 
-**更新日期**: 2024-10-29
-**文件状态**: ✅ 已整理完毕
+**更新日期**: 2025年12月23日
+**文件状态**: ✅ 已整理完毕，重复文件已清理
 
